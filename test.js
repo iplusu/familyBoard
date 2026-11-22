@@ -4,8 +4,9 @@ const assert = require('assert');
 const os = require('os'), path = require('path');
 
 const DATA_FILE = path.join(os.tmpdir(), `fb-test-${process.pid}.json`);
-const KV_PREFIX = `fbtest-${process.pid}`; // KV 환경변수가 있으면 실제 KV의 테스트용 키에서 실행
-const srv = spawn(process.execPath, [path.join(__dirname, 'server.js')], { env: { ...process.env, PORT: 3999, DATA_FILE, KV_PREFIX } });
+// Firebase 환경변수가 있으면 실제 Firebase의 테스트용 위치에서 실행하고 끝나면 지움
+Object.assign(process.env, { DATA_FILE, BOARD_KEY: `fbtest-${process.pid}` });
+const srv = spawn(process.execPath, [path.join(__dirname, 'server.js')], { env: { ...process.env, PORT: 3999 } });
 const U = 'http://localhost:3999';
 const post = (r, body, cookie) => fetch(`${U}/api?r=${r}`, { method: 'POST', headers: { 'Content-Type': 'application/json', cookie: cookie || '' }, body: JSON.stringify(body) });
 const cookieOf = (r) => r.headers.get('set-cookie').split(';')[0];
@@ -41,8 +42,7 @@ const cookieOf = (r) => r.headers.get('set-cookie').split(';')[0];
     assert.equal(s3.memos.filter((m) => /^m\d$/.test(m.text)).length, 10, '동시 저장 시 유실 없음');
     console.log('ok');
   } finally {
-    srv.kill(); require('fs').rmSync(DATA_FILE, { force: true });
-    const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL, tok = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-    if (url) await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${tok}` }, body: JSON.stringify(['DEL', `${KV_PREFIX}:ver`, `${KV_PREFIX}:data`]) });
+    srv.kill();
+    await require('./api').store.del();
   }
 })().catch((e) => { console.error(e.message); process.exitCode = 1; });

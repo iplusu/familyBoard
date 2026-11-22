@@ -17,27 +17,43 @@ const fresh = () => ({
   memos: [], // { id, text, who, at }
 });
 
-// ---------- 저장소: KV(Upstash Redis) 환경변수가 있으면 KV, 없으면 data.json ----------
-const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-const KEY = process.env.KV_PREFIX || 'familyboard';
+// ---------- 저장소: Firebase Realtime Database(무료 Spark 요금제) 환경변수가 있으면 Firebase, 없으면 data.json ----------
+// FIREBASE_DB_URL: https://<프로젝트>-default-rtdb.<지역>.firebasedatabase.app
+// FIREBASE_SERVICE_ACCOUNT: Firebase 콘솔에서 받은 서비스 계정 키 JSON 전체
+const DB_URL = process.env.FIREBASE_DB_URL?.replace(/\/+$/, '');
+const SA = process.env.FIREBASE_SERVICE_ACCOUNT && JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+const KEY = process.env.BOARD_KEY || 'familyboard';
+const b64 = (x) => Buffer.from(typeof x === 'string' ? x : JSON.stringify(x)).toString('base64url');
 
-async function kv(cmd) {
-  const r = await fetch(KV_URL, { method: 'POST', headers: { Authorization: `Bearer ${KV_TOKEN}` }, body: JSON.stringify(cmd) });
-  const j = await r.json().catch(() => ({ error: `HTTP ${r.status}` }));
-  if (j.error) throw new Error('KV: ' + j.error);
-  return j.result;
+// 서비스 계정으로 Google 액세스 토큰 발급 (JWT RS256 서명), 만료 전까지 재사용
+let tok = { value: null, exp: 0 };
+async function token() {
+  if (Date.now() < tok.exp) return tok.value;
+  const now = Math.floor(Date.now() / 1000), aud = SA.token_uri || 'https://oauth2.googleapis.com/token';
+  const unsigned = b64({ alg: 'RS256', typ: 'JWT' }) + '.' + b64({ iss: SA.client_email, aud, iat: now, exp: now + 3600,
+    scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/firebase.database' });
+  const jwt = unsigned + '.' + crypto.sign('RSA-SHA256', Buffer.from(unsigned), SA.private_key).toString('base64url');
+  const r = await fetch(aud, { method: 'POST', body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: jwt }) });
+  const j = await r.json();
+  if (!j.access_token) throw new Error('Firebase token: ' + JSON.stringify(j));
+  tok = { value: j.access_token, exp: Date.now() + (j.expires_in - 300) * 1000 };
+  return tok.value;
 }
-// 읽은 뒤 아무도 안 바꿨을 때만 저장 → 두 기기가 동시에 고쳐도 한쪽 변경이 사라지지 않음
-const CAS = "if (redis.call('GET', KEYS[1]) or '0') ~= ARGV[1] then return 0 end " +
-  "redis.call('SET', KEYS[2], ARGV[2]) redis.call('INCR', KEYS[1]) return 1";
-
-const kvStore = {
+async function fb(method, headers = {}, body) {
+  const r = await fetch(`${DB_URL}/${KEY}.json`, { method, body, headers: { Authorization: `Bearer ${await token()}`, ...headers } });
+  if (!r.ok && r.status !== 412) throw new Error(`Firebase ${method} ${r.status}: ${await r.text()}`);
+  return r;
+}
+// 데이터는 문자열 하나로 저장(Firebase가 빈 배열·null을 지우는 것 방지).
+// ETag가 그대로일 때만 저장 → 두 기기가 동시에 고쳐도 한쪽 변경이 사라지지 않음
+const firebaseStore = {
   async load() {
-    const [ver, data] = await kv(['MGET', `${KEY}:ver`, `${KEY}:data`]);
-    return { ver: ver || '0', db: data ? JSON.parse(data) : fresh() };
+    const r = await fb('GET', { 'X-Firebase-ETag': 'true' });
+    const data = await r.json();
+    return { ver: r.headers.get('etag'), db: data ? JSON.parse(data) : fresh() };
   },
-  async cas(ver, db) { return (await kv(['EVAL', CAS, '2', `${KEY}:ver`, `${KEY}:data`, ver, JSON.stringify(db)])) === 1; },
+  async cas(ver, db) { return (await fb('PUT', { 'if-match': ver }, JSON.stringify(JSON.stringify(db)))).ok; },
+  async del() { await fb('DELETE'); }, // 테스트 정리용
 };
 
 function fileStore() {
@@ -57,9 +73,10 @@ function fileStore() {
       ver++;
       return true;
     },
+    async del() { fs.rmSync(file, { force: true }); },
   };
 }
-const store = KV_URL && KV_TOKEN ? kvStore : process.env.VERCEL ? null : fileStore();
+const store = DB_URL && SA ? firebaseStore : process.env.VERCEL ? null : fileStore();
 
 // ---------- 인증 ----------
 const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
@@ -128,8 +145,10 @@ function body(req) {
   });
 }
 
-module.exports = async function handler(req, res) {
-  if (!store) return send(res, 500, { error: 'no_kv' });
+module.exports = handler;
+module.exports.store = store;
+async function handler(req, res) {
+  if (!store) return send(res, 500, { error: 'no_db' });
   const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress).split(',')[0].trim();
   const r = new URL(req.url, 'http://x').searchParams.get('r');
   const post = req.method === 'POST';

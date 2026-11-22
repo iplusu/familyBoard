@@ -139,7 +139,7 @@ const L = {
     noEvents: '일정이 없어요', noMemos: '메모가 없어요', save: '저장', taskPh: '매일 할 일 추가 (최대 8개)', devices: '📱 등록된 기기', thisDevice: '(이 기기)',
     unregister: '해제', confirmDel: '삭제할까요?', confirmTask: '이 할 일을 지울까요?', confirmDev: '이 기기의 등록을 해제할까요?', mom: '엄마', dad: '아빠', family: '가족',
     e_already_setup: '이미 설정됐어요', e_setup_first: '먼저 설정하세요', e_locked: 'PIN을 여러 번 틀렸어요. 5분 후 다시 시도하세요', e_wrong_pin: 'PIN이 틀렸어요',
-    e_parent_only: '부모만 할 수 있어요', e_conflict: '동시에 바뀌었어요. 다시 해 주세요', e_bad_request: '입력을 확인해 주세요', e_no_kv: '서버에 KV가 연결되지 않았어요', e_server_error: '오류가 났어요' },
+    e_parent_only: '부모만 할 수 있어요', e_conflict: '동시에 바뀌었어요. 다시 해 주세요', e_bad_request: '입력을 확인해 주세요', e_no_db: '서버에 Firebase가 연결되지 않았어요', e_server_error: '오류가 났어요' },
   en: { locale: 'en-US', other: '한국어', title: '🏠 Our Family Board', namePh: "Device name (e.g. Living room tablet, Mom's phone)", pinPh: 'Parent PIN (4–8 digits)',
     roleFamily: '👨‍👩‍👧‍👦 Family screen', roleParent: '🔑 Parent device', start: 'Start', settings: '⚙️ Settings', events: '📅 Upcoming', memos: '💬 Notes',
     addEvent: '📅 Add event', eventPh: 'What? (e.g. Soccer practice)', add: 'Add', cancel: 'Cancel', addMemo: '💬 Leave a note', memoPh: 'Your message', post: 'Post',
@@ -148,7 +148,7 @@ const L = {
     noEvents: 'No events', noMemos: 'No notes', save: 'Save', taskPh: 'Add a daily task (max 8)', devices: '📱 Registered devices', thisDevice: '(this device)',
     unregister: 'Remove', confirmDel: 'Delete this?', confirmTask: 'Delete this task?', confirmDev: 'Remove this device?', mom: 'Mom', dad: 'Dad', family: 'Family',
     e_already_setup: 'Already set up', e_setup_first: 'Set up first', e_locked: 'Too many wrong PINs. Try again in 5 minutes', e_wrong_pin: 'Wrong PIN',
-    e_parent_only: 'Parents only', e_conflict: 'Changed at the same time. Please try again', e_bad_request: 'Please check your input', e_no_kv: 'KV storage is not connected on the server', e_server_error: 'Something went wrong' },
+    e_parent_only: 'Parents only', e_conflict: 'Changed at the same time. Please try again', e_bad_request: 'Please check your input', e_no_db: 'Firebase is not connected on the server', e_server_error: 'Something went wrong' },
 };
 let lang = 'en'; // 기본 영어, 기기에서 바꾸면 그 기기에 기억
 try { lang = localStorage.getItem('lang') || 'en'; } catch {}
@@ -163,7 +163,7 @@ function applyLang() {
   if (S) { render(); if ($('#settingsDlg').open) renderSettings(); }
 }
 
-const POLL_MS = 10000; // 다른 기기 변경을 확인하는 간격 (짧을수록 빠르지만 KV 사용량↑)
+const POLL_MS = 10000; // 다른 기기 변경을 확인하는 간격 (짧을수록 빠르지만 데이터 사용량↑)
 
 async function api(url, data) {
   const r = await fetch(url, data ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) } : {});

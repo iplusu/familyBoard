@@ -16,6 +16,6 @@ http.createServer((req, res) => {
   res.writeHead(404).end();
 }).listen(PORT, '0.0.0.0', () => {
   const ips = Object.values(require('os').networkInterfaces()).flat().filter((i) => i.family === 'IPv4' && !i.internal).map((i) => i.address);
-  console.log(`가족 대시보드: http://localhost:${PORT}  (저장소: ${process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL ? 'KV' : 'data.json'})`);
+  console.log(`가족 대시보드: http://localhost:${PORT}  (저장소: ${process.env.FIREBASE_DB_URL ? 'Firebase' : 'data.json'})`);
   for (const a of ips) console.log(`  같은 와이파이의 태블릿·폰: http://${a}:${PORT}`);
 });
