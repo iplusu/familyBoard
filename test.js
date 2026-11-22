@@ -126,6 +126,14 @@ const cookieOf = (r) => r.headers.get('set-cookie').split(';')[0];
     assert.notEqual((await (await fetch(U + '/api?r=ver')).json()).v, v1, '저장하면 버전이 바뀜');
 
     const tabId = s2.devices.find((d) => d.name === '태블릿').id;
+    // 기기 수정·삭제: 부모 기기는 하나 이상 남아야 함, 부모로 바꾸려면 PIN
+    const myId = s2.devices.find((d) => d.me).id;
+    assert.equal((await act(parent, 'delDevice', { id: myId })).status, 400, '마지막 부모 기기는 삭제 불가');
+    assert.equal((await act(parent, 'editDevice', { id: myId, name: 'x', role: 'family' })).status, 400, '마지막 부모 기기는 가족 기기로 못 바꿈');
+    assert.equal((await act(parent, 'editDevice', { id: tabId, name: '거실 태블릿', role: 'parent' })).status, 403, '부모로 바꾸려면 PIN');
+    assert.equal((await act(tab, 'editDevice', { id: tabId, name: 'x', role: 'family' })).status, 403, '태블릿은 기기 수정 불가');
+    assert.equal((await act(parent, 'editDevice', { id: tabId, name: '거실 태블릿', role: 'family' })).status, 200);
+    assert.equal((await state(parent)).devices.find((d) => d.id === tabId).name, '거실 태블릿', '이름 바뀜');
     await post('action', { type: 'delDevice', id: tabId }, parent);
     assert.equal((await fetch(U + '/api?r=state', { headers: { cookie: tab } })).status, 401, '해제된 기기 차단');
     for (let i = 0; i < 5; i++) await post('register', { pin: '0001', name: 't', role: 'family' });

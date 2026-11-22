@@ -219,7 +219,18 @@ const actions = {
     db.invites.push({ hash: sha(code), role: pick(b.role, ['parent', 'family']), exp: Date.now() + 15 * 60e3 });
     return { reply: { code } };
   } },
-  delDevice: { parent: true, run(db, b, me) { if (b.id === me.id) throw 400; db.devices = db.devices.filter((d) => d.id !== b.id); } },
+  // 기기 관리: 부모 기기가 하나도 안 남게 되는 삭제·변경은 막음 (잠김 방지)
+  delDevice: { parent: true, run(db, b) {
+    const d = find(db.devices, b.id);
+    if (d.role === 'parent' && db.devices.filter((x) => x.role === 'parent').length === 1) throw 'last_parent';
+    db.devices = db.devices.filter((x) => x !== d);
+  } },
+  editDevice: { parent: true, needPin: (b) => b.role === 'parent', run(db, b) { // 부모 기기로 바꿀 때는 PIN 확인
+    const d = find(db.devices, b.id), role = pick(b.role, ['parent', 'family']);
+    if (d.role === 'parent' && role === 'family' && db.devices.filter((x) => x.role === 'parent').length === 1) throw 'last_parent';
+    d.name = str(b.name, 20);
+    if (role !== d.role) { d.role = role; delete d.member; delete d.push; } // 역할이 바뀌면 엄마/아빠·알림은 다시 설정
+  } },
   changePin: { parent: true, needPin: true, run(db, b) { setPin(db, newPin(b.pin)); } },
 
   // 부모 기기 주인(엄마/아빠) 정하기, 알림 등록

@@ -185,6 +185,8 @@
   dialog h3 { margin: 0; font-size: 1.5rem; }
   .row, dialog form.row { display: flex; flex-direction: row; gap: .5rem; align-items: center; flex-wrap: wrap; }
   .row > input:not([type=color]), .row > label { flex: 1; }
+  form.dev { border-top: 2px solid var(--line); padding-top: .6rem; }
+  form.dev:first-child { border-top: 0; padding-top: 0; }
   .settings section { border: 2px solid var(--track); border-radius: 18px; padding: .8rem; }
   .settings h4 { margin: 0 0 .5rem; font-size: 1.2rem; }
   input[type=color] { width: 3.2rem; height: 3rem; padding: .2rem; }
@@ -337,7 +339,7 @@ const L = {
     noEvents: '일정이 없어요', noMemos: '메모가 없어요', save: '저장', taskPh: '루틴 추가 (시간대마다 최대 8개)', devices: '📱 등록된 기기', thisDevice: '(이 기기)',
     unregister: '해제', confirmDel: '삭제할까요?', confirmTask: '이 루틴을 지울까요?', confirmDev: '이 기기의 등록을 해제할까요?', mom: '엄마', dad: '아빠', family: '가족',
     addDevice: '＋ 기기 추가', inviteMake: '등록 링크 만들기', inviteHelp: '새 기기에서 이 링크를 열면 PIN 없이 등록돼요. 15분 안에 한 번만 쓸 수 있어요.',
-    copy: '복사', invitePin: '부모 기기 링크는 PIN 확인 (가족 화면은 비워 두기)', e_weak_pin: '너무 쉬운 PIN이에요 (0000, 1234 같은 것). 다른 숫자로 정해 주세요.', share: '공유', copied: '복사했어요', joinMsg: '등록 링크로 들어왔어요. 이 기기 이름만 정해 주세요.', e_bad_link: '링크가 만료됐거나 이미 쓰였어요. 부모 기기에서 새 링크를 만들어 주세요.',
+    copy: '복사', promotePin: '부모 기기로 바꾸려면 PIN 입력', confirmDevMe: '이 기기의 등록을 해제할까요? 다시 쓰려면 PIN으로 등록해야 해요.', e_last_parent: '부모 기기가 하나는 남아 있어야 해요. 다른 부모 기기를 먼저 등록해 주세요.', invitePin: '부모 기기 링크는 PIN 확인 (가족 화면은 비워 두기)', e_weak_pin: '너무 쉬운 PIN이에요 (0000, 1234 같은 것). 다른 숫자로 정해 주세요.', share: '공유', copied: '복사했어요', joinMsg: '등록 링크로 들어왔어요. 이 기기 이름만 정해 주세요.', e_bad_link: '링크가 만료됐거나 이미 쓰였어요. 부모 기기에서 새 링크를 만들어 주세요.',
     wxTitle: '🌤 날씨 위치', wxCity: '도시 이름 (예: 서울 마포구)', wxFind: '찾기', wxGeo: '📍 이 기기 위치 쓰기', wxHere: '우리 동네', wxNone: '🌤 설정에서 날씨 위치를 정해 주세요',
     wxNotFound: '그 이름으로 찾지 못했어요', wxClear: '위치 지우기', wxFrom: '날씨 정보', dust10: '미세', dust25: '초미세',
     dustLv: ['좋음', '보통', '나쁨', '매우나쁨'], hourFmt: (h) => `${h}시`, feels: '체감',
@@ -372,7 +374,7 @@ const L = {
     noEvents: 'No events', noMemos: 'No notes', save: 'Save', taskPh: 'Add a routine item (max 8 per time)', devices: '📱 Registered devices', thisDevice: '(this device)',
     unregister: 'Remove', confirmDel: 'Delete this?', confirmTask: 'Delete this routine item?', confirmDev: 'Remove this device?', mom: 'Mom', dad: 'Dad', family: 'Family',
     addDevice: '＋ Add device', inviteMake: 'Create join link', inviteHelp: 'Open this link on the new device to register it without the PIN. Works once, for 15 minutes.',
-    copy: 'Copy', invitePin: 'PIN (needed for a parent-device link only)', e_weak_pin: 'That PIN is too easy (like 0000 or 1234). Choose another one.', share: 'Share', copied: 'Copied', joinMsg: 'You opened a join link. Just name this device.', e_bad_link: 'This link expired or was already used. Create a new one on a parent device.',
+    copy: 'Copy', promotePin: 'Enter the PIN to make this a parent device', confirmDevMe: 'Remove this device? You will need the PIN to register it again.', e_last_parent: 'At least one parent device must remain. Register another parent device first.', invitePin: 'PIN (needed for a parent-device link only)', e_weak_pin: 'That PIN is too easy (like 0000 or 1234). Choose another one.', share: 'Share', copied: 'Copied', joinMsg: 'You opened a join link. Just name this device.', e_bad_link: 'This link expired or was already used. Create a new one on a parent device.',
     wxTitle: '🌤 Weather location', wxCity: 'City (e.g. Seoul)', wxFind: 'Find', wxGeo: "📍 Use this device's location", wxHere: 'Home', wxNone: '🌤 Set a weather location in Settings',
     wxNotFound: "Couldn't find that place", wxClear: 'Clear location', wxFrom: 'Weather by', dust10: 'PM10', dust25: 'PM2.5',
     dustLv: ['Good', 'Moderate', 'Bad', 'Very bad'], hourFmt: (h) => `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`, feels: 'feels',
@@ -891,9 +893,12 @@ function renderSettings() {
     <h4 style="margin-top:.8rem">${t('classes')}</h4>
     <div class="col">${S.classes.filter((c) => c.kid === k.id).map((c) => `<details class="cls"><summary>${esc(c.name)} · ${c.days.map((d) => t('wdays')[d]).join(' ')} ${c.time}</summary>${classForm(k, c)}</details>`).join('')}
     <details class="cls"><summary>${t('addClass')}</summary>${classForm(k)}</details></div>
-  </section>`).join('') + `<section><h4>${t('devices')}</h4><ul>${S.devices.map((d) => `<li>
-    ${d.role === 'parent' ? '🔑' : '🖥️'} ${esc(d.name)} ${d.member ? `(${memberFace(d.member)} ${t(d.member)})` : ''} ${d.me ? t('thisDevice') : ''}
-    ${d.me ? '' : `<button class="x" style="margin-left:auto" data-deldev="${d.id}">${t('unregister')}</button>`}</li>`).join('')}</ul>
+  </section>`).join('') + `<section><h4>${t('devices')}</h4><div class="col">${S.devices.map((d) => `<form class="col dev" data-dev="${d.id}" data-role="${d.role}">
+    <div class="cmemo">${d.role === 'parent' ? '🔑' : '🖥️'} ${d.member ? `${memberFace(d.member)} ${t(d.member)} · ` : ''}${new Date(d.created).toLocaleDateString(t('locale'))} ${d.me ? `<b>${t('thisDevice')}</b>` : ''}</div>
+    <div class="row"><input name="name" value="${esc(d.name)}" maxlength="20" required>
+      <select name="role" style="flex:0 0 auto"><option value="family" ${d.role === 'family' ? 'selected' : ''}>${t('roleFamily')}</option><option value="parent" ${d.role === 'parent' ? 'selected' : ''}>${t('roleParent')}</option></select></div>
+    <input name="current" type="password" inputmode="numeric" autocomplete="off" placeholder="${t('promotePin')}" hidden>
+    <div class="row"><button>${t('save')}</button><button type="button" class="x" data-deldev="${d.id}" data-me="${d.me ? 1 : ''}">🗑 ${t('unregister')}</button></div></form>`).join('')}</div>
     <h4 style="margin-top:.8rem">${t('addDevice')}</h4>
     <form class="col" data-invite><div class="roles">
       <label><input type="radio" name="role" value="family" checked><span>${t('roleFamily')}</span></label>
@@ -961,7 +966,7 @@ document.addEventListener('click', async (e) => {
     if (b.id === 'openSettings') { inviteLink = ''; renderSettings(); $('#settingsDlg').showModal(); }
     if (b.id === 'openMail') openMail();
     if (d.deltask) { const [kidId, taskId] = d.deltask.split(':'); if (confirm(t('confirmTask'))) await act('delTask', { kidId, taskId }); }
-    if (d.deldev && confirm(t('confirmDev'))) await act('delDevice', { id: d.deldev });
+    if (d.deldev && confirm(t(d.me ? 'confirmDevMe' : 'confirmDev'))) { await act('delDevice', { id: d.deldev }); if (d.me) boot(); }
     if (d.setme) await act('setMe', { member: d.setme });
     // 게시판
     if (d.note) { stopAlarm(); const [id, kid] = d.note.split(':'); openNote(id, kid); }
@@ -986,7 +991,11 @@ document.addEventListener('click', async (e) => {
     if (d.push !== undefined) await enablePush();
   } catch {} // 오류 안내는 api()에서
 });
-document.addEventListener('change', (e) => { // °C/°F는 고르면 바로 적용
+document.addEventListener('change', (e) => {
+  if (e.target.matches('form.dev [name=role]')) { // 부모 기기로 바꿀 때만 PIN 칸
+    const f = e.target.form, up = e.target.value === 'parent' && f.dataset.role !== 'parent';
+    f.current.hidden = !up; f.current.required = up;
+  } // °C/°F는 고르면 바로 적용
   if (e.target.matches('[data-place] [name=unit]') && S.place) act('setPlace', { ...S.place, unit: e.target.value }).catch(() => {});
 });
 document.addEventListener('submit', async (e) => {
@@ -1011,6 +1020,7 @@ document.addEventListener('submit', async (e) => {
       const r = g.results?.[0]; if (!r) return alert(t('wxNotFound'));
       await act('setPlace', { name: [r.name, r.admin1].filter(Boolean).join(', '), lat: r.latitude, lon: r.longitude, unit: v.unit }); f.reset();
     }
+    if (ds.dev) { await act('editDevice', { id: ds.dev, ...v }).finally(() => { f.current.value = ''; }); alert(t('saved')); }
     if ('pin' in ds) { await act('changePin', v); f.reset(); alert(t('pinChanged')); }
     if ('addnote' in ds) {
       if (!fd.getAll('to').length) return alert(t('pickTo'));
