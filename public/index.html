@@ -3,31 +3,53 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#fff6ea">
+<meta name="theme-color" content="#FFDE59">
 <link rel="manifest" href="/manifest.json">
 <title>Our Family Board</title>
 <style>
+  /* 낮: 노랑 · 밤(저녁 7시~아침 6시): 남색 */
+  :root { --bg: #FFDE59; --card: #fff; --ink: #1A1A1A; --gray: #5C5850; --mute: #9A9282; --line: rgba(26,26,26,.12); --soft: #FFF3B8; --cream: #FFF9E6;
+    --track: #F1EBD6; --btn: #1A1A1A; --btntx: #fff; --home: #DDF3DE; --homeTx: #1F6B2E; --shadow: 0 3px 0 rgba(0,0,0,.06), 0 10px 24px rgba(120,90,0,.08); }
+  body.night { --bg: #121327; --card: #1D1F3B; --ink: #F5F1E3; --gray: #BDB8A8; --mute: #8C88A0; --line: rgba(255,255,255,.14); --soft: #3A3519; --cream: #26284A;
+    --track: #2E3054; --btn: #FFDE59; --btntx: #1A1A1A; --home: #1F3A2A; --homeTx: #9BE3A8; --shadow: 0 3px 0 rgba(0,0,0,.3); }
   * { box-sizing: border-box; }
-  body { margin: 0; height: 100dvh; display: flex; flex-direction: column; background: #fff6ea; color: #2b2622;
+  body { margin: 0; height: 100dvh; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); transition: background .6s;
     font-family: system-ui, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif; -webkit-tap-highlight-color: transparent; }
   button, input, select, textarea { font: inherit; }
-  button { cursor: pointer; border: 0; border-radius: 16px; padding: .6rem 1.1rem; background: #2b2622; color: #fff; font-weight: 700; }
-  button.ghost { background: #f1e6d8; color: #2b2622; }
-  input, select, textarea { padding: .7rem .9rem; border: 2px solid #e2d4c2; border-radius: 14px; background: #fff; min-width: 0; }
+  button { cursor: pointer; border: 0; border-radius: 16px; padding: .6rem 1.1rem; background: var(--btn); color: var(--btntx); font-weight: 800; }
+  button.ghost { background: var(--cream); color: var(--ink); box-shadow: inset 0 0 0 2px var(--line); }
+  input, select, textarea { padding: .7rem .9rem; border: 2px solid var(--line); border-radius: 14px; background: var(--cream); color: var(--ink); min-width: 0; }
   textarea { min-height: 5rem; resize: vertical; }
   [hidden] { display: none !important; }
 
-  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 1.2rem; padding: .6rem 1.4rem .4rem; }
-  #clock { white-space: nowrap; font-size: clamp(2.4rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -.02em; }
-  #date { font-size: clamp(1.2rem, 2.4vw, 1.8rem); font-weight: 600; color: #7a6b5d; }
-  header .right { margin-left: auto; display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; color: #9a8b7d; }
-  #openMail { font-size: 1.2rem; }
+  /* 위: 왼쪽에 날짜·시간 크게 | 오른쪽 위 작은 상태줄 한 줄, 그 아래 날씨 */
+  header { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "when right" "when wx"; column-gap: 1.4rem; row-gap: .2rem; padding: .4rem 1.2rem .5rem; align-items: center; }
+  .when { grid-area: when; line-height: 1; }
+  #date { font-size: clamp(1.3rem, 2.6vw, 2rem); font-weight: 800; color: var(--gray); white-space: nowrap; }
+  #clock { white-space: nowrap; font-size: clamp(3rem, 6.4vw, 5rem); font-weight: 900; letter-spacing: -.03em; margin-top: .15rem; }
+  #wx { grid-area: wx; }
+  header .right { grid-area: right; justify-self: end; display: flex; flex-wrap: nowrap; gap: .4rem; align-items: center; color: var(--mute); font-size: .85rem; white-space: nowrap; overflow: hidden; max-width: 100%; }
+  header .right button { padding: .25rem .7rem; border-radius: 12px; font-size: .9rem; }
+  header .right #mePick { display: flex; gap: .3rem; align-items: center; }
+  #openMail { font-weight: 800; }
+  /* 날씨 */
+  #wx { display: flex; flex-direction: column; gap: .25rem; min-width: 0; }
+  #wx:empty { display: none; }
+  .wrow { display: flex; align-items: center; gap: .8rem; min-width: 0; }
+  .wnow { font-size: clamp(1.6rem, 3.2vw, 2.4rem); font-weight: 900; white-space: nowrap; }
+  .wmm { font-weight: 800; white-space: nowrap; color: var(--gray); }
+  .whours { display: flex; gap: .35rem; overflow: hidden; min-width: 0; }
+  .wh { display: flex; flex-direction: column; align-items: center; font-size: .85rem; font-weight: 700; padding: .15rem .35rem; border-radius: 10px; background: var(--card); min-width: 2.9rem; }
+  .wh i { font-style: normal; font-size: 1.1rem; }
+  .wh small { color: #2e7ad1; font-size: .7rem; }
+  .dust { padding: .1rem .6rem; border-radius: 99px; background: var(--c); color: #fff; font-weight: 800; white-space: nowrap; font-size: .95rem; }
+  .tip { font-weight: 700; font-size: clamp(.95rem, 1.6vw, 1.15rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .badge { display: inline-block; min-width: 1.6em; margin-left: .4em; padding: 0 .45em; border-radius: 99px; background: #e74c3c; color: #fff; font-size: .85em; text-align: center; }
 
   main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr 1.25fr; gap: 1rem; padding: 0 1rem 1rem; }
   #kids { display: contents; }
-  .side { display: grid; grid-template-rows: 1.5fr 1fr .8fr; gap: 1rem; min-height: 0; }
-  .card { background: #fff; border-radius: 26px; padding: 1rem 1.1rem; box-shadow: 0 2px 10px #0000000d; display: flex; flex-direction: column; min-height: 0; overflow: auto; }
+  .side { display: grid; grid-template-rows: 1.7fr 1.1fr .8fr; gap: 1rem; min-height: 0; }
+  .card { background: var(--card); border-radius: 26px; padding: 1rem 1.1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; min-height: 0; overflow: auto; }
   .card h2 { margin: 0 0 .5rem; font-size: clamp(1.3rem, 2.6vw, 1.9rem); display: flex; align-items: center; gap: .5rem; }
   .card h2 .add { margin-left: auto; font-size: 1.6rem; width: 3rem; height: 3rem; padding: 0; border-radius: 50%; flex: none; }
   .card h2 .hist { margin-left: auto; padding: .4rem .7rem; }
@@ -36,27 +58,77 @@
   body.parent .parentOnly { display: inline-block !important; }
 
   .kid { border-top: 10px solid var(--c); }
-  .kid .emoji { font-size: 1.4em; }
+  .kid .emoji { font-size: 1.1em; width: 2.2em; height: 2.2em; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--c) 25%, var(--card)); box-shadow: inset 0 0 0 3px var(--c); flex: none; }
+  .card h2, #clock { font-weight: 900; letter-spacing: -.02em; }
   .kid .count { margin-left: auto; background: var(--c); color: #fff; border-radius: 99px; padding: .1rem .8rem; font-size: .8em; text-shadow: 0 1px 2px #0005; }
   .tasks { flex: 1; display: flex; flex-direction: column; gap: .5rem; }
   .task { flex: 1; min-height: 42px; max-height: 96px; display: flex; align-items: center; gap: .6rem; text-align: left;
-    font-size: clamp(1.25rem, 2.4vw, 1.8rem); background: #fff; color: #2b2622; border: 3px solid var(--c); border-radius: 20px; }
-  .task.done { background: color-mix(in srgb, var(--c) 28%, #fff); }
+    font-size: clamp(1.25rem, 2.4vw, 1.8rem); background: var(--card); color: var(--ink); border: 3px solid var(--c); border-radius: 20px; }
+  .task.done { background: color-mix(in srgb, var(--c) 28%, var(--card)); }
   .task.done span { text-decoration: line-through; opacity: .6; }
+  .slotname { font-size: clamp(1.2rem, 2.3vw, 1.6rem); font-weight: 800; margin: .2rem 0 .6rem; }
+  .deposit { margin-left: auto; background: #2e9e5b; color: #fff; border-radius: 99px; padding: .15rem .8rem; font-size: .8em; white-space: nowrap; }
+  .slots { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .55rem .6rem; margin: .3rem 0 .8rem; }
+  .slotrow { display: contents; font-size: clamp(1rem, 1.9vw, 1.3rem); font-weight: 700; }
+  .slotrow > * { opacity: .55; }
+  .slotrow.now > * { opacity: 1; }
+  .slotrow.now { font-size: clamp(1.15rem, 2.2vw, 1.5rem); }
+  .slotrow > span:first-child { white-space: nowrap; }
+  .slotrow .n { text-align: right; }
+  .reward { text-align: center; font-size: clamp(1.1rem, 2.1vw, 1.45rem); font-weight: 800; padding: .6rem; border-radius: 16px; background: var(--cream); }
+  .reward.got { background: var(--home); color: var(--homeTx); }
+  .bar { height: 1.6rem; border-radius: 99px; background: var(--track); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--c); border-radius: 99px; transition: width .4s; }
+  .big { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 900; text-align: center; margin: .4rem 0; }
+  .seeall, .bigdone { color: #fff; }
+  .seeall { font-size: clamp(1.3rem, 2.6vw, 1.8rem); padding: 1rem; background: var(--c); text-shadow: 0 1px 2px #0005; margin-top: auto; }
+  .tabs { display: flex; gap: .4rem; flex-wrap: wrap; }
+  .tabs .chip { flex: 1; }
+  #routineList { gap: .6rem; }
+  #routineList .task { flex: none; min-height: 64px; max-height: none; }
+  /* 아이별 오늘·내일 일정 */
+  .agenda { display: flex; flex-direction: column; gap: .35rem; margin-top: .7rem; min-height: 0; overflow: auto; }
+  .agenda h3 { margin: 0; font-size: clamp(1.05rem, 2vw, 1.35rem); }
+  .ag { padding: .4rem .7rem; border-radius: 14px; background: var(--cream); font-size: clamp(1rem, 1.8vw, 1.25rem); font-weight: 700; }
+  .ag .tm { margin-right: .4rem; }
+  .ag .memo, .cmemo { color: var(--gray); font-weight: 500; font-size: .85em; }
+  .ag .prep { font-weight: 600; font-size: .85em; margin-top: .1rem; }
+  .ag.off, .ci.off { text-decoration: line-through; opacity: .55; }
+  .tag { display: inline-block; font-size: .7em; padding: 0 .45em; border-radius: 8px; background: #e74c3c; color: #fff; margin-left: .3em; text-decoration: none; vertical-align: middle; }
+  .tag.mk { background: #2e7ad1; }
+  /* 한 달 달력 */
+  .calhead { display: flex; align-items: center; gap: .5rem; }
+  .calhead h3 { flex: 1; text-align: center; }
+  .calgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .calgrid .wd { text-align: center; font-weight: 800; font-size: .9rem; color: var(--gray); }
+  .cell { min-height: 92px; max-height: 120px; overflow: hidden; padding: 4px; border-radius: 10px; background: var(--cream); text-align: left; color: var(--ink);
+    font-weight: 500; display: flex; flex-direction: column; gap: 2px; align-items: stretch; justify-content: flex-start; box-shadow: none; }
+  .cell.other { opacity: .35; }
+  .cell.today { box-shadow: inset 0 0 0 3px var(--ink); }
+  .cell.sel { background: var(--soft); }
+  .cell b { font-size: .9rem; }
+  .ci { font-size: .72rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 4px solid var(--c, var(--mute)); padding-left: 3px; }
+  .cdetail li { display: block; }
+  .cdetail .row { margin-top: .3rem; }
+  .days { display: flex; gap: .3rem; flex-wrap: wrap; }
+  .days .chip { padding: .35rem .6rem; font-size: 1rem; }
+  details.cls { border: 2px solid var(--line); border-radius: 14px; padding: .4rem .7rem; }
+  details.cls summary { font-weight: 700; cursor: pointer; }
+  details.cls form { margin-top: .5rem; }
   .cheer { text-align: center; font-size: 1.6rem; font-weight: 800; margin-top: .6rem; }
-  .empty { color: #a99a8b; font-size: 1.2rem; margin: .3rem 0; }
+  .empty { color: var(--mute); font-size: 1.2rem; margin: .3rem 0; }
 
   ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
-  li { display: flex; align-items: center; gap: .7rem; font-size: clamp(1.05rem, 1.9vw, 1.35rem); padding: .55rem .8rem; border-radius: 16px; background: #faf4ec; }
-  li.today { background: #ffe9c7; }
+  li { display: flex; align-items: center; gap: .7rem; font-size: clamp(1.05rem, 1.9vw, 1.35rem); padding: .55rem .8rem; border-radius: 16px; background: var(--cream); }
+  li.today { background: var(--soft); }
   li .when { font-weight: 800; white-space: nowrap; }
   li .who { margin-left: auto; white-space: nowrap; font-size: .85em; padding: .1rem .6rem; border-radius: 99px; color: #fff; background: var(--c, #8a7a6a); }
   li .x, .x { display: none; background: none; color: #c0392b; padding: .2rem .5rem; font-size: 1.3rem; }
   body.parent li .x, .settings .x { display: inline-block; }
 
   /* 얼굴 버튼 (게시판·우체통) */
-  .face { position: relative; width: 3rem; height: 3rem; padding: 0; border-radius: 50%; font-size: 1.6rem; line-height: 1; background: #fff; color: #2b2622; border: 3px solid var(--c, #8a7a6a); flex: none; }
-  .face.done { background: color-mix(in srgb, var(--c) 30%, #fff); }
+  .face { position: relative; width: 3rem; height: 3rem; padding: 0; border-radius: 50%; font-size: 1.6rem; line-height: 1; background: var(--card); color: var(--ink); border: 3px solid var(--c, #8a7a6a); flex: none; }
+  .face.done { background: color-mix(in srgb, var(--c) 30%, var(--card)); }
   .face.done::after { content: '✓'; position: absolute; right: -6px; bottom: -6px; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: #2e9e5b; color: #fff; font-size: .85rem; line-height: 1.3rem; }
   .face .dot { position: absolute; top: -3px; right: -3px; width: .85rem; height: .85rem; border-radius: 50%; background: #e74c3c; }
   .face.big { width: auto; height: auto; min-width: 9rem; padding: 1rem 1.4rem; border-radius: 24px; display: flex; flex-direction: column; align-items: center; gap: .3rem; font-size: 3.2rem; }
@@ -64,9 +136,22 @@
   .face.big .badge { position: absolute; top: -.5rem; right: -.5rem; font-size: 1.1rem; }
   .faces { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
 
-  li.note { display: grid; grid-template-columns: 1fr auto auto; gap: .6rem; }
+  /* 오른쪽 칸은 촘촘하게 (태블릿 한 화면) */
+  .side .card { padding: .65rem .85rem; }
+  .side .card h2 { font-size: clamp(1.1rem, 1.9vw, 1.4rem); margin-bottom: .35rem; }
+  .side .card h2 .add { width: 2.3rem; height: 2.3rem; font-size: 1.25rem; }
+  .side .card h2 .hist { padding: .2rem .5rem; }
+  .side ul { gap: .35rem; }
+  .side li { padding: .3rem .6rem; font-size: clamp(.95rem, 1.55vw, 1.12rem); border-radius: 12px; }
+  .side .face { width: 2.4rem; height: 2.4rem; font-size: 1.25rem; }
+  .side li.note .box { font-size: 1.1rem; }
+  .side .empty { font-size: 1rem; margin: 0; }
+  li.more { background: none; padding: 0; }
+  li.more button { width: 100%; padding: .2rem; font-size: .9rem; }
+  li.note { display: grid; grid-template-columns: auto 1fr auto auto; gap: .6rem; padding: .45rem .7rem; }
+  li.note .box { font-size: 1.3rem; }
   li.note .ntext { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .nmeta { font-size: .8em; color: #7a6b5d; }
+  .nmeta { font-size: .8em; color: var(--gray); }
   li.note.over .nmeta { color: #c0392b; font-weight: 700; }
   li.note.future { opacity: .55; }
   .nfaces { display: flex; gap: .45rem; }
@@ -78,50 +163,55 @@
     .side { grid-template-rows: auto; }
     .task { flex: none; }
     .mailgrid { grid-template-columns: 1fr !important; }
+    .card, .agenda { overflow: visible; }
+    .agenda, .seeall { flex: none; }
+    .seeall { margin-top: .8rem; }
+    header { grid-template-columns: 1fr; grid-template-areas: "right" "when" "wx"; }
+    header .right { justify-self: stretch; flex-wrap: wrap; white-space: normal; }
   }
 
   #gate { flex: 1; display: grid; place-items: center; padding: 1rem; }
   #gate form { width: min(440px, 100%); gap: .8rem; }
   #gate h1 { margin: 0; font-size: 2rem; }
   .roles { display: flex; gap: .6rem; }
-  .roles label { flex: 1; padding: .7rem; border: 2px solid #e2d4c2; border-radius: 14px; text-align: center; font-weight: 600; }
-  .roles label:has(input:checked) { border-color: #2b2622; background: #f1e6d8; }
+  .roles label { flex: 1; padding: .7rem; border: 2px solid var(--line); border-radius: 14px; text-align: center; font-weight: 600; }
+  .roles label:has(input:checked) { border-color: var(--ink); background: var(--track); }
   .roles input { display: none; }
 
-  dialog { border: 0; border-radius: 24px; padding: 1.2rem; width: min(560px, 94vw); max-height: 92dvh; box-shadow: 0 10px 40px #0004; }
+  dialog { border: 0; border-radius: 24px; padding: 1.2rem; width: min(560px, 94vw); max-height: 92dvh; box-shadow: 0 10px 40px #0004; background: var(--card); color: var(--ink); }
   dialog.wide { width: min(1000px, 96vw); }
   dialog::backdrop { background: #0006; }
   dialog form, .col { display: flex; flex-direction: column; gap: .7rem; }
   dialog h3 { margin: 0; font-size: 1.5rem; }
   .row, dialog form.row { display: flex; flex-direction: row; gap: .5rem; align-items: center; flex-wrap: wrap; }
   .row > input:not([type=color]), .row > label { flex: 1; }
-  .settings section { border: 2px solid #f1e6d8; border-radius: 18px; padding: .8rem; }
+  .settings section { border: 2px solid var(--track); border-radius: 18px; padding: .8rem; }
   .settings h4 { margin: 0 0 .5rem; font-size: 1.2rem; }
   input[type=color] { width: 3.2rem; height: 3rem; padding: .2rem; }
 
   /* 우체통 */
   .mailgrid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1rem; }
   .chips, .phrases { display: flex; flex-wrap: wrap; gap: .5rem; }
-  .chip { background: #fff; color: #2b2622; border: 3px solid #e2d4c2; padding: .5rem .9rem; border-radius: 16px; font-weight: 700; font-size: 1.1rem; }
-  .chip.on, .chip:has(input:checked) { border-color: var(--c, #2b2622); background: color-mix(in srgb, var(--c, #2b2622) 22%, #fff); }
+  .chip { background: var(--card); color: var(--ink); border: 3px solid var(--line); padding: .5rem .9rem; border-radius: 16px; font-weight: 700; font-size: 1.1rem; }
+  .chip.on, .chip:has(input:checked) { border-color: var(--c, var(--ink)); background: color-mix(in srgb, var(--c, var(--ink)) 22%, var(--card)); }
   .chip input { display: none; }
   .phrase { font-size: 1.2rem; padding: .8rem 1rem; }
   .maillist { max-height: 62dvh; overflow: auto; }
   li.mail { display: block; }
-  li.mail.unread { background: #ffe9c7; }
-  .mhead { font-size: .8em; color: #7a6b5d; display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
+  li.mail.unread { background: var(--soft); }
+  .mhead { font-size: .8em; color: var(--gray); display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
   .mtext { font-size: 1.3rem; font-weight: 700; margin: .2rem 0; overflow-wrap: anywhere; }
-  .re { font-size: .8em; color: #9a8b7d; border-left: 3px solid #e2d4c2; padding-left: .5rem; }
+  .re { font-size: .8em; color: var(--mute); border-left: 3px solid var(--line); padding-left: .5rem; }
   .reads { font-size: .8em; color: #2e9e5b; }
   .quick { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .4rem; }
   .quick button { padding: .45rem .75rem; font-size: 1rem; }
 
   /* 게시판 상세·알람 */
-  .notebig { font-size: 1.8rem; font-weight: 700; white-space: pre-wrap; overflow-wrap: anywhere; padding: 1rem; background: #faf4ec; border-radius: 18px; }
+  .notebig { font-size: 1.8rem; font-weight: 700; white-space: pre-wrap; overflow-wrap: anywhere; padding: 1rem; background: var(--cream); border-radius: 18px; }
   .bigdone { font-size: 1.8rem; padding: 1.1rem; background: var(--c); text-shadow: 0 1px 2px #0005; }
-  .bigdone.ghost { background: #f1e6d8; text-shadow: none; }
+  .bigdone.ghost { background: var(--track); text-shadow: none; }
   #alarm { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: #000b; padding: 1rem; }
-  #alarm .box { background: #fff; border-radius: 30px; padding: 2rem; text-align: center; width: min(640px, 100%); }
+  #alarm .box { background: var(--card); border-radius: 30px; padding: 2rem; text-align: center; width: min(640px, 100%); }
   #alarm .ring { font-size: 5rem; animation: shake .4s infinite; }
   @keyframes shake { 50% { transform: rotate(14deg); } }
 </style>
@@ -144,7 +234,8 @@
 
 <div id="board" hidden style="display:contents">
   <header>
-    <div id="clock"></div><div id="date"></div>
+    <div class="when"><div id="date"></div><div id="clock"></div></div>
+    <div id="wx"></div>
     <div class="right">
       <span id="mePick"></span><span id="devName"></span>
       <button class="ghost" data-lang></button>
@@ -156,7 +247,7 @@
     <div id="kids"></div>
     <div class="side">
       <section class="card"><h2><span data-i="boardTitle"></span><button class="ghost hist" data-hist>📜</button><button class="add parentOnly" data-open="noteAddDlg">＋</button></h2><ul id="notes"></ul></section>
-      <section class="card"><h2><span data-i="events"></span> <button class="add" data-open="eventDlg">＋</button></h2><ul id="events"></ul></section>
+      <section class="card"><h2><span data-i="events"></span><button class="ghost hist" data-calopen>🗓</button><button class="add" data-open="eventDlg">＋</button></h2><ul id="events"></ul></section>
       <section class="card"><h2><span data-i="memos"></span> <button class="add" data-open="memoDlg">＋</button></h2><ul id="memos"></ul></section>
     </div>
   </main>
@@ -167,6 +258,7 @@
   <input name="title" data-ip="eventPh" maxlength="60" required>
   <div class="row"><input name="date" type="date" required><input name="time" type="time"></div>
   <select name="who" class="whoSel"></select>
+  <input name="prep" data-ip="prepPh" maxlength="60">
   <div class="row"><button data-i="add"></button><button type="button" class="ghost" data-close data-i="cancel"></button></div>
 </form></dialog>
 
@@ -188,6 +280,20 @@
   <label class="col"><span data-i="alarmTime"></span><input name="alarm" type="time"></label>
   <div class="row"><button data-i="post"></button><button type="button" class="ghost" data-close data-i="cancel"></button></div>
 </form></dialog>
+
+<dialog id="routineDlg"><div class="col" id="routineBody"></div></dialog>
+
+<dialog id="calDlg" class="wide"><div class="col">
+  <div class="calhead"><button class="ghost" data-calmove="-1">◀</button><h3 id="calTitle"></h3><button class="ghost" data-calmove="1">▶</button>
+    <button type="button" class="ghost" data-close data-i="close"></button></div>
+  <div class="calgrid" id="calGrid"></div>
+  <div class="col cdetail" id="calDetail"></div>
+</div></dialog>
+
+<dialog id="listDlg" class="wide"><div class="col">
+  <div class="row"><h3 id="listTitle"></h3><button type="button" class="ghost" data-close style="margin-left:auto" data-i="close"></button></div>
+  <ul id="listBody"></ul>
+</div></dialog>
 
 <dialog id="noteDlg"><div class="col" id="noteBody"></div></dialog>
 
@@ -219,7 +325,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const today = () => ymd(new Date());
 const addDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return ymd(d); };
-let S = null, day = today(), poll = null, lastVer;
+let S = null, day = today(), slotNow = '', poll = null, lastVer;
 
 // ---------- 언어 (기기마다 따로 기억) ----------
 const L = {
@@ -227,9 +333,16 @@ const L = {
     roleFamily: '👨‍👩‍👧‍👦 가족 화면', roleParent: '🔑 부모 기기', start: '시작하기', settings: '⚙️ 설정', events: '📅 다가오는 일정', memos: '💬 메모',
     addEvent: '📅 일정 추가', eventPh: '무엇을? (예: 태권도)', add: '추가', cancel: '취소', addMemo: '💬 메모 남기기', memoPh: '하고 싶은 말', post: '붙이기',
     settingsTitle: '⚙️ 설정 (부모)', close: '닫기', setupMsg: '처음 오셨네요! 부모 PIN을 만들어 주세요. 이 기기는 부모 기기로 등록돼요.',
-    registerMsg: '이 기기를 등록하려면 부모 PIN을 입력하세요.', today: '오늘', tomorrow: '내일', noTasks: '오늘 할 일이 없어요', cheer: '🎉 다 했어요! 최고!',
-    noEvents: '일정이 없어요', noMemos: '메모가 없어요', save: '저장', taskPh: '매일 할 일 추가 (최대 8개)', devices: '📱 등록된 기기', thisDevice: '(이 기기)',
-    unregister: '해제', confirmDel: '삭제할까요?', confirmTask: '이 할 일을 지울까요?', confirmDev: '이 기기의 등록을 해제할까요?', mom: '엄마', dad: '아빠', family: '가족',
+    registerMsg: '이 기기를 등록하려면 부모 PIN을 입력하세요.', today: '오늘', tomorrow: '내일', noTasks: '이 시간 루틴이 없어요', slot_am: '🌅 아침', slot_pm: '🎒 방과후', slot_eve: '🌙 저녁', seeAll: '📋 전체 보기', deposit: '적립금', saved: '저장했어요', rewardGot: '🎉 오늘 루틴 끝! +$1 적립', rewardLeft: '🎁 {n}개 더 하면 +$1', cheer: '🎉 다 했어요! 최고!',
+    noEvents: '일정이 없어요', noMemos: '메모가 없어요', save: '저장', taskPh: '루틴 추가 (시간대마다 최대 8개)', devices: '📱 등록된 기기', thisDevice: '(이 기기)',
+    unregister: '해제', confirmDel: '삭제할까요?', confirmTask: '이 루틴을 지울까요?', confirmDev: '이 기기의 등록을 해제할까요?', mom: '엄마', dad: '아빠', family: '가족',
+    addDevice: '＋ 기기 추가', inviteMake: '등록 링크 만들기', inviteHelp: '새 기기에서 이 링크를 열면 PIN 없이 등록돼요. 15분 안에 한 번만 쓸 수 있어요.',
+    copy: '복사', invitePin: '부모 기기 링크는 PIN 확인 (가족 화면은 비워 두기)', e_weak_pin: '너무 쉬운 PIN이에요 (0000, 1234 같은 것). 다른 숫자로 정해 주세요.', share: '공유', copied: '복사했어요', joinMsg: '등록 링크로 들어왔어요. 이 기기 이름만 정해 주세요.', e_bad_link: '링크가 만료됐거나 이미 쓰였어요. 부모 기기에서 새 링크를 만들어 주세요.',
+    wxTitle: '🌤 날씨 위치', wxCity: '도시 이름 (예: 서울 마포구)', wxFind: '찾기', wxGeo: '📍 이 기기 위치 쓰기', wxHere: '우리 동네', wxNone: '🌤 설정에서 날씨 위치를 정해 주세요',
+    wxNotFound: '그 이름으로 찾지 못했어요', wxClear: '위치 지우기', wxFrom: '날씨 정보', dust10: '미세', dust25: '초미세',
+    dustLv: ['좋음', '보통', '나쁨', '매우나쁨'], hourFmt: (h) => `${h}시`, feels: '체감',
+    wear: ['🩳 반팔·반바지', '👕 반팔에 얇은 셔츠', '👔 얇은 긴팔', '🧥 얇은 겉옷이나 가디건', '🧥 자켓 입기', '🧥 두꺼운 겉옷', '🧶 코트에 니트', '🧣 패딩·목도리·장갑'],
+    tipGap: '🌡 일교차 커요, 겉옷 챙기기', tipUmbrella: '☔ 우산 챙기기', tipMask: '😷 마스크 쓰기',
     pinTitle: '🔒 PIN 변경', curPin: '지금 PIN', newPin: '새 PIN (숫자 4~8자리)', pinChanged: 'PIN을 바꿨어요. 이미 등록된 기기는 그대로 쓸 수 있어요.',
     mailbox: '📮 우체통', whoSends: '누가 보내요?', whoAreYou: '이 폰은 누구 거예요?', back: '← 뒤로', to: '받는 사람', all: '모두', writePh: '직접 쓰기',
     send: '보내기', pickTo: '받는 사람을 골라 주세요', noMail: '쪽지가 없어요', read: '읽음', sent: '보냈어요!',
@@ -240,17 +353,31 @@ const L = {
     notifUnsupported: '이 브라우저에서는 알림을 받을 수 없어요. 아이폰은 공유 → 홈 화면에 추가 후, 홈 화면 아이콘으로 열어서 다시 눌러 주세요.',
     boardTitle: '📌 해야 할 일', noNotes: '붙은 쪽지가 없어요', addNote: '📌 쪽지 붙이기', notePh: '무엇을 해야 하나요?', startDate: '시작일', endDate: '마감일',
     alarmTime: '⏰ 매일 알람 시각 (선택)', due: '마감', overdue: '마감 지남', from: '보낸 사람', didIt: '✅ 했어요!', undoDone: '↩ 아직 안 했어요',
-    history: '📜 끝낸 쪽지', noHistory: '아직 기록이 없어요', alarmOk: '확인', doneAt: '완료',
+    history: '📜 끝낸 쪽지', noHistory: '아직 기록이 없어요', more: '＋ {n}개 더 보기', alarmOk: '확인', doneAt: '완료',
     e_already_setup: '이미 설정됐어요', e_setup_first: '먼저 설정하세요', e_locked: 'PIN을 여러 번 틀렸어요. 5분 후 다시 시도하세요', e_wrong_pin: 'PIN이 틀렸어요',
     e_parent_only: '부모만 할 수 있어요', e_conflict: '동시에 바뀌었어요. 다시 해 주세요', e_bad_request: '입력을 확인해 주세요', e_no_db: '서버에 Firebase가 연결되지 않았어요',
-    e_need_member: '먼저 위에서 이 폰이 누구 건지 골라 주세요', e_server_error: '오류가 났어요' },
+    e_need_member: '먼저 위에서 이 폰이 누구 건지 골라 주세요', e_server_error: '오류가 났어요',
+    agToday: '📅 오늘 일정', agTomorrow: '🌙 내일 일정', noAgenda: '일정이 없어요', prep: '🎒 준비물', prepPh: '준비물 (선택)', off: '휴강', makeup: '보강',
+    classes: '🏫 학원', className: '학원 이름 (예: 🎹 피아노)', classMemo: '메모 (예: 3층 302호)', classPrep: '준비물 (예: 악보, 물통)',
+    period: '다니는 기간 (선택)', saveClass: '저장', addClass: '＋ 새 학원', pickDays: '요일을 하나 이상 골라 주세요', confirmClass: '이 학원을 지울까요?',
+    wdays: ['일', '월', '화', '수', '목', '금', '토'], markOff: '휴강 표시', unmarkOff: '휴강 취소', addMakeup: '보강 추가', classAlarm: '15분 뒤 {name}!',
+    calTitle: '🔗 외부 달력 (iCal)', calPh: '비공개 iCal 주소 (https:// 또는 webcal://)', calConnect: '연결', calNote: '주소는 서버에만 저장되고, 어느 화면에도 다시 보이지 않아요.',
+    calOn: '연결됨 ✓', calLast: '마지막 동기화', calNow: '지금 동기화', calOff: '연결 해제', confirmCalOff: '외부 달력 연결을 끊을까요?', addHere: '＋ 이날 일정',
+    e_cal_fetch: '달력을 불러오지 못했어요. 주소를 확인해 주세요.', e_cal_big: '달력이 너무 커요', e_cal_format: 'iCal 형식이 아니에요' },
   en: { locale: 'en-US', other: '한국어', title: '🏠 Our Family Board', namePh: "Device name (e.g. Living room tablet, Mom's phone)", pinPh: 'Parent PIN (4–8 digits)',
     roleFamily: '👨‍👩‍👧‍👦 Family screen', roleParent: '🔑 Parent device', start: 'Start', settings: '⚙️ Settings', events: '📅 Upcoming', memos: '💬 Notes',
     addEvent: '📅 Add event', eventPh: 'What? (e.g. Soccer practice)', add: 'Add', cancel: 'Cancel', addMemo: '💬 Leave a note', memoPh: 'Your message', post: 'Post',
     settingsTitle: '⚙️ Settings (parents)', close: 'Close', setupMsg: 'Welcome! Create a parent PIN. This device will be registered as a parent device.',
-    registerMsg: 'Enter the parent PIN to register this device.', today: 'Today', tomorrow: 'Tomorrow', noTasks: 'Nothing to do today', cheer: '🎉 All done! Great job!',
-    noEvents: 'No events', noMemos: 'No notes', save: 'Save', taskPh: 'Add a daily task (max 8)', devices: '📱 Registered devices', thisDevice: '(this device)',
-    unregister: 'Remove', confirmDel: 'Delete this?', confirmTask: 'Delete this task?', confirmDev: 'Remove this device?', mom: 'Mom', dad: 'Dad', family: 'Family',
+    registerMsg: 'Enter the parent PIN to register this device.', today: 'Today', tomorrow: 'Tomorrow', noTasks: 'No routine for this time', slot_am: '🌅 Morning', slot_pm: '🎒 After school', slot_eve: '🌙 Evening', seeAll: '📋 See all', deposit: 'Deposit', saved: 'Saved', rewardGot: '🎉 All done today! +$1 deposit', rewardLeft: '🎁 {n} more to earn $1', cheer: '🎉 All done! Great job!',
+    noEvents: 'No events', noMemos: 'No notes', save: 'Save', taskPh: 'Add a routine item (max 8 per time)', devices: '📱 Registered devices', thisDevice: '(this device)',
+    unregister: 'Remove', confirmDel: 'Delete this?', confirmTask: 'Delete this routine item?', confirmDev: 'Remove this device?', mom: 'Mom', dad: 'Dad', family: 'Family',
+    addDevice: '＋ Add device', inviteMake: 'Create join link', inviteHelp: 'Open this link on the new device to register it without the PIN. Works once, for 15 minutes.',
+    copy: 'Copy', invitePin: 'PIN (needed for a parent-device link only)', e_weak_pin: 'That PIN is too easy (like 0000 or 1234). Choose another one.', share: 'Share', copied: 'Copied', joinMsg: 'You opened a join link. Just name this device.', e_bad_link: 'This link expired or was already used. Create a new one on a parent device.',
+    wxTitle: '🌤 Weather location', wxCity: 'City (e.g. Seoul)', wxFind: 'Find', wxGeo: "📍 Use this device's location", wxHere: 'Home', wxNone: '🌤 Set a weather location in Settings',
+    wxNotFound: "Couldn't find that place", wxClear: 'Clear location', wxFrom: 'Weather by', dust10: 'PM10', dust25: 'PM2.5',
+    dustLv: ['Good', 'Moderate', 'Bad', 'Very bad'], hourFmt: (h) => `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`, feels: 'feels',
+    wear: ['🩳 T-shirt and shorts', '👕 T-shirt, light shirt', '👔 Light long sleeves', '🧥 Light jacket or cardigan', '🧥 Wear a jacket', '🧥 Warm jacket', '🧶 Coat and sweater', '🧣 Puffer, scarf and gloves'],
+    tipGap: '🌡 Big temperature swing, bring a layer', tipUmbrella: '☔ Take an umbrella', tipMask: '😷 Wear a mask',
     pinTitle: '🔒 Change PIN', curPin: 'Current PIN', newPin: 'New PIN (4–8 digits)', pinChanged: 'PIN changed. Devices already registered keep working.',
     mailbox: '📮 Mailbox', whoSends: "Who's sending?", whoAreYou: 'Whose phone is this?', back: '← Back', to: 'To', all: 'Everyone', writePh: 'Write your own',
     send: 'Send', pickTo: 'Pick who to send to', noMail: 'No messages', read: 'read', sent: 'Sent!',
@@ -261,10 +388,17 @@ const L = {
     notifUnsupported: "This browser can't receive notifications. On iPhone: Share → Add to Home Screen, open it from the home screen, then tap again.",
     boardTitle: '📌 To-do board', noNotes: 'No notes posted', addNote: '📌 Post a note', notePh: 'What needs to be done?', startDate: 'Start', endDate: 'Due',
     alarmTime: '⏰ Daily alarm time (optional)', due: 'Due', overdue: 'Overdue', from: 'From', didIt: '✅ Done!', undoDone: '↩ Not done yet',
-    history: '📜 Finished notes', noHistory: 'No history yet', alarmOk: 'OK', doneAt: 'Done',
+    history: '📜 Finished notes', noHistory: 'No history yet', more: '＋ {n} more', alarmOk: 'OK', doneAt: 'Done',
     e_already_setup: 'Already set up', e_setup_first: 'Set up first', e_locked: 'Too many wrong PINs. Try again in 5 minutes', e_wrong_pin: 'Wrong PIN',
     e_parent_only: 'Parents only', e_conflict: 'Changed at the same time. Please try again', e_bad_request: 'Please check your input', e_no_db: 'Firebase is not connected on the server',
-    e_need_member: 'First choose whose phone this is (top of the screen)', e_server_error: 'Something went wrong' },
+    e_need_member: 'First choose whose phone this is (top of the screen)', e_server_error: 'Something went wrong',
+    agToday: '📅 Today', agTomorrow: '🌙 Tomorrow', noAgenda: 'Nothing scheduled', prep: '🎒 Bring', prepPh: 'Things to bring (optional)', off: 'Cancelled', makeup: 'Make-up',
+    classes: '🏫 Classes', className: 'Class name (e.g. 🎹 Piano)', classMemo: 'Memo (e.g. Room 302)', classPrep: 'Things to bring (e.g. music book)',
+    period: 'Active period (optional)', saveClass: 'Save', addClass: '＋ New class', pickDays: 'Pick at least one day', confirmClass: 'Delete this class?',
+    wdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], markOff: 'Mark cancelled', unmarkOff: 'Undo cancel', addMakeup: 'Add make-up', classAlarm: '{name} in 15 minutes!',
+    calTitle: '🔗 External calendar (iCal)', calPh: 'Private iCal address (https:// or webcal://)', calConnect: 'Connect', calNote: 'The address is stored only on the server and is never shown on any screen.',
+    calOn: 'Connected ✓', calLast: 'Last sync', calNow: 'Sync now', calOff: 'Disconnect', confirmCalOff: 'Disconnect the external calendar?', addHere: '＋ Event this day',
+    e_cal_fetch: "Couldn't load the calendar. Check the address.", e_cal_big: 'Calendar is too large', e_cal_format: 'Not an iCal calendar' },
 };
 let lang = 'en'; // 기본 영어, 기기에서 바꾸면 그 기기에 기억
 try { lang = localStorage.getItem('lang') || 'en'; } catch {}
@@ -296,20 +430,25 @@ async function checkVer() { // 바뀐 게 있을 때만 전체를 다시 받음
 
 // ---------- 시작: 등록 확인 ----------
 let gateMode;
+const joinCode = () => new URLSearchParams(location.search).get('join');
 async function boot() {
   const me = await (await fetch('/api?r=me')).json();
   if (me.device) return start();
   clearInterval(poll); S = null;
   $('#board').hidden = true; $('#gate').hidden = false;
   gateMode = me.setup ? 'register' : 'setup';
-  $('#roles').hidden = gateMode === 'setup';
-  $('#gateMsg').dataset.i = gateMode === 'setup' ? 'setupMsg' : 'registerMsg';
+  const join = me.setup && joinCode();
+  $('#roles').hidden = gateMode === 'setup' || !!join;
+  $('#gateForm').pin.hidden = !!join; $('#gateForm').pin.required = !join;
+  $('#gateMsg').dataset.i = join ? 'joinMsg' : gateMode === 'setup' ? 'setupMsg' : 'registerMsg';
   applyLang();
 }
 $('#gateForm').onsubmit = async (e) => {
   e.preventDefault();
-  const f = Object.fromEntries(new FormData(e.target));
-  await api('/api?r=' + gateMode, f).catch(() => {});
+  const f = Object.fromEntries(new FormData(e.target)), join = gateMode === 'register' && joinCode();
+  if (join) { delete f.pin; delete f.role; f.join = join; }
+  const ok = await api('/api?r=' + gateMode, f).then(() => true, () => false);
+  if (join && ok) history.replaceState(null, '', '/');
   e.target.pin.value = '';
   boot();
 };
@@ -336,6 +475,8 @@ function refresh() { // 열려 있는 화면을 모두 새 데이터로
   if ($('#settingsDlg').open) renderSettings();
   if ($('#mailDlg').open) renderMail(true);
   if ($('#noteDlg').open) renderNote();
+  if ($('#routineDlg').open) renderRoutine();
+  if ($('#calDlg').open) renderCal();
   if ($('#histDlg').open) renderHist();
 }
 
@@ -365,33 +506,198 @@ function render() {
   document.body.classList.toggle('parent', parent);
   $('#openSettings').hidden = !parent;
   $('#devName').textContent = S.me.name;
+  renderWx(); loadWeather();
   $('#mePick').innerHTML = parent && !S.me.member
     ? `${t('whoAreYou')} ${PARENTS.map((m) => `<button class="ghost" data-setme="${m}">${memberFace(m)} ${t(m)}</button>`).join(' ')}` : '';
   const unread = myUnread();
   $('#mailBadge').hidden = !unread; $('#mailBadge').textContent = unread;
 
+  // 홈에서는 시간대별 진행 상황과 적립금만. 체크는 "전체 보기"에서 글자를 읽고.
+  const slot = nowSlot();
   $('#kids').innerHTML = S.kids.map((k) => {
-    const done = k.tasks.filter((x) => x.doneOn === td).length;
+    const left = k.tasks.filter((x) => x.doneOn !== td).length;
+    const rows = SLOTS.map((s) => {
+      const items = slotTasks(k, s), done = items.filter((x) => x.doneOn === td).length;
+      if (!items.length) return '';
+      return `<div class="slotrow ${s === slot ? 'now' : ''}"><span>${t('slot_' + s)}</span>
+        <div class="bar"><i style="width:${done / items.length * 100}%"></i></div>
+        <span class="n">${done === items.length ? '✅' : `${done}/${items.length}`}</span></div>`;
+    }).join('');
     return `<section class="card kid" style="--c:${k.color}">
-      <h2><span class="emoji">${esc(k.emoji)}</span>${esc(k.name)}<span class="count">${done}/${k.tasks.length}</span></h2>
-      <div class="tasks">${k.tasks.map((x) => `<button class="task ${x.doneOn === td ? 'done' : ''}" data-toggle="${k.id}:${x.id}">
-        ${x.doneOn === td ? '✅' : '⬜️'} <span>${esc(x.text)}</span></button>`).join('') || `<p class="empty">${t('noTasks')}</p>`}</div>
-      ${k.tasks.length && done === k.tasks.length ? `<div class="cheer">${t('cheer')}</div>` : ''}
+      <h2><span class="emoji">${esc(k.emoji)}</span>${esc(k.name)}<span class="deposit">💰 ${money(k.cents)}</span></h2>
+      ${rows ? `<div class="slots">${rows}</div>
+        <div class="reward ${k.rewardOn === td ? 'got' : ''}">${k.rewardOn === td ? t('rewardGot') : t('rewardLeft').replace('{n}', left)}</div>`
+        : `<p class="empty">${t('noTasks')}</p>`}
+      ${agendaHtml(k)}
+      <button class="seeall" data-routine="${k.id}">${t('seeAll')}</button>
     </section>`;
   }).join('');
 
   $('#notes').innerHTML = activeNotes().sort((a, b) => a.end.localeCompare(b.end)).map((n) => noteRow(n, td)).join('') || `<p class="empty">${t('noNotes')}</p>`;
 
-  const ev = S.events.filter((e) => e.date >= td).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 10);
+  const ev = [...S.events, ...extEvents().map((e) => ({ ...e, ext: true }))].filter((e) => e.date >= td)
+    .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 10);
   $('#events').innerHTML = ev.map((e) => `<li class="${e.date === td ? 'today' : ''}">
     <span class="when">${dayLabel(e.date)} ${e.time}</span><span>${esc(e.title)}</span>
-    <span class="who" style="--c:${kidColor(e.who) || '#8a7a6a'}">${esc(e.who)}</span>
-    <button class="x" data-del="delEvent:${e.id}">✕</button></li>`).join('') || `<p class="empty">${t('noEvents')}</p>`;
+    ${e.ext ? '<span class="who">🔗</span>' : `<span class="who" style="--c:${kidColor(e.who) || '#8a7a6a'}">${esc(e.who)}</span>
+    <button class="x" data-del="delEvent:${e.id}">✕</button>`}</li>`).join('') || `<p class="empty">${t('noEvents')}</p>`;
 
   $('#memos').innerHTML = S.memos.map((m) => `<li><span>${esc(m.text)}</span>
     <span class="who" style="--c:${kidColor(m.who) || '#8a7a6a'}">${esc(m.who)}</span>
     <button class="x" data-del="delMemo:${m.id}">✕</button></li>`).join('') || `<p class="empty">${t('noMemos')}</p>`;
+  fitAll();
 }
+const fitAll = () => { for (const id of ['notes', 'events', 'memos']) fitList($('#' + id)); };
+// 태블릿 한 화면: 카드에 안 들어가는 줄은 숨기고 "+N개 더"를 누르면 전체 목록
+function fitList(ul) {
+  ul.querySelector('.more')?.remove();
+  const card = ul.closest('.card'), items = [...ul.children].filter((li) => li.tagName === 'LI');
+  items.forEach((li) => li.hidden = false);
+  let n = 0, more = null;
+  while (card.scrollHeight > card.clientHeight + 1 && n < items.length) {
+    items[items.length - 1 - n++].hidden = true;
+    if (!more) { more = document.createElement('li'); more.className = 'more'; ul.append(more); }
+    more.innerHTML = `<button class="ghost" data-more="${ul.id}">${t('more').replace('{n}', n)}</button>`;
+  }
+}
+function openList(id) {
+  $('#listTitle').textContent = $('#' + id).closest('.card').querySelector('h2 span').textContent;
+  $('#listBody').innerHTML = $('#' + id).innerHTML; // 숨긴 줄까지 모두
+  $('#listBody').querySelectorAll('[hidden]').forEach((x) => x.hidden = false);
+  $('#listBody').querySelector('.more')?.remove();
+  $('#listDlg').showModal();
+}
+addEventListener('resize', () => S && render());
+
+// ---------- 루틴 (아침·방과후·저녁) ----------
+const SLOTS = ['am', 'pm', 'eve'];
+const money = (c) => '$' + ((c || 0) / 100).toFixed(2);
+const nowSlot = () => { const h = new Date().getHours(); return h < 12 ? 'am' : h < 18 ? 'pm' : 'eve'; };
+const slotTasks = (k, slot) => k.tasks.filter((x) => x.slot === slot);
+let routineOpen = null;
+function renderRoutine() {
+  const k = kidOf(routineOpen?.kid); if (!k) return $('#routineDlg').close();
+  const td = today(), items = slotTasks(k, routineOpen.slot), done = items.filter((x) => x.doneOn === td).length;
+  $('#routineBody').innerHTML = `<div class="row"><h3>${esc(k.emoji)} ${esc(k.name)}</h3>
+      <button type="button" class="ghost" data-close style="margin-left:auto">${t('close')}</button></div>
+    <div class="tabs">${SLOTS.map((s) => `<button class="chip ${s === routineOpen.slot ? 'on' : ''}" style="--c:${k.color}" data-slot="${s}">${t('slot_' + s)}</button>`).join('')}</div>
+    <div class="col" id="routineList" style="--c:${k.color}">${items.map((x) => `<button class="task ${x.doneOn === td ? 'done' : ''}" data-toggle="${k.id}:${x.id}">
+      ${x.doneOn === td ? '✅' : '⬜️'} <span>${esc(x.text)}</span></button>`).join('') || `<p class="empty">${t('noTasks')}</p>`}</div>
+    ${items.length && done === items.length ? `<div class="cheer">${t('cheer')}</div>` : ''}`;
+}
+
+// ---------- 일정: 학원(휴강·보강) + 가족 일정 + 외부 달력 ----------
+const hm = (d) => d.toTimeString().slice(0, 5);
+const extEvents = () => (S.cal.events || []).map((e) => e.at ? { ...e, date: ymd(new Date(e.at)), time: hm(new Date(e.at)) } : e);
+function dayItems(d) {
+  const dow = new Date(d + 'T00:00').getDay(), out = [];
+  for (const c of S.classes) {
+    const base = { c, kid: c.kid, title: c.name, memo: c.memo, prep: c.prep };
+    if (c.days.includes(dow) && (!c.start || d >= c.start) && (!c.end || d <= c.end)) out.push({ ...base, kind: 'class', time: c.time, off: c.off.includes(d) });
+    for (const m of c.makeup) if (m.date === d) out.push({ ...base, kind: 'makeup', time: m.time });
+  }
+  for (const e of S.events) if (e.date === d) out.push({ kind: 'event', e, kid: S.kids.find((k) => k.name === e.who)?.id, who: e.who, time: e.time, title: e.title, prep: e.prep });
+  for (const e of extEvents()) if (e.date === d) out.push({ kind: 'ext', time: e.time, title: e.title, memo: e.loc });
+  return out.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+}
+const agendaDay = () => new Date().getHours() >= 18 ? addDays(1) : today(); // 저녁에는 내일 것
+const tags = (it) => (it.off ? `<span class="tag">${t('off')}</span>` : '') + (it.kind === 'makeup' ? `<span class="tag mk">${t('makeup')}</span>` : '');
+function agendaHtml(k) {
+  const d = agendaDay(), items = dayItems(d).filter((it) => it.kid === k.id);
+  return `<div class="agenda"><h3>${t(d === today() ? 'agToday' : 'agTomorrow')}</h3>${items.map((it) => `<div class="ag ${it.off ? 'off' : ''}">
+    <span class="tm">${it.time}</span>${esc(it.title)}${tags(it)}${it.memo ? ` <span class="memo">· ${esc(it.memo)}</span>` : ''}
+    ${it.prep && !it.off ? `<div class="prep">${t('prep')}: ${esc(it.prep)}</div>` : ''}</div>`).join('') || `<p class="empty">${t('noAgenda')}</p>`}</div>`;
+}
+
+// ---------- 날씨: Open-Meteo, 막히면 MET Norway (둘 다 키 없음). 미세먼지는 Open-Meteo 대기질 ----------
+const WX_ICON = { sun: '☀️', partly: '⛅', cloud: '☁️', fog: '🌫', rain: '🌧', snow: '❄️', storm: '⛈' };
+const wmo = (c) => c === 0 ? 'sun' : c <= 2 ? 'partly' : c === 3 ? 'cloud' : c <= 48 ? 'fog' : c >= 95 ? 'storm' : (c >= 71 && c <= 77) || c === 85 || c === 86 ? 'snow' : 'rain';
+const metKind = (s = '') => /thunder/.test(s) ? 'storm' : /snow/.test(s) ? 'snow' : /rain|sleet/.test(s) ? 'rain' : /fog/.test(s) ? 'fog' : /partly|fair/.test(s) ? 'partly' : /cloudy/.test(s) ? 'cloud' : 'sun';
+const getJSON = async (u) => { const r = await fetch(u, { signal: AbortSignal.timeout(8000) }); if (!r.ok) throw new Error(r.status); return r.json(); };
+async function fromOpenMeteo(p) {
+  const j = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,apparent_temperature,weather_code`
+    + '&hourly=temperature_2m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=2');
+  const H = j.hourly, i0 = Math.max(0, H.time.findIndex((x) => x.slice(0, 13) >= j.current.time.slice(0, 13)));
+  return { temp: j.current.temperature_2m, feels: j.current.apparent_temperature, kind: wmo(j.current.weather_code),
+    min: j.daily.temperature_2m_min[0], max: j.daily.temperature_2m_max[0], src: 'Open-Meteo',
+    hours: H.time.slice(i0, i0 + 12).map((x, i) => ({ h: +x.slice(11, 13), temp: H.temperature_2m[i0 + i], kind: wmo(H.weather_code[i0 + i]), pop: H.precipitation_probability[i0 + i] ?? 0 })) };
+}
+async function fromMet(p) {
+  const j = await getJSON(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${p.lat}&lon=${p.lon}`);
+  const ts = j.properties.timeseries.filter((x) => Date.parse(x.time) > Date.now() - 3600e3);
+  const hours = ts.slice(0, 12).map((x) => ({ h: new Date(x.time).getHours(), temp: x.data.instant.details.air_temperature,
+    kind: metKind(x.data.next_1_hours?.summary.symbol_code), pop: (x.data.next_1_hours?.details.precipitation_amount ?? 0) > 0.1 ? 70 : 0 }));
+  const day = ts.filter((x) => ymd(new Date(x.time)) === today()).map((x) => x.data.instant.details.air_temperature);
+  const temps = day.length ? day : hours.map((h) => h.temp);
+  return { temp: hours[0].temp, feels: null, kind: hours[0].kind, min: Math.min(...temps), max: Math.max(...temps), hours, src: 'MET Norway' };
+}
+async function fromAir(p) {
+  const j = await getJSON(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${p.lat}&longitude=${p.lon}&current=pm10,pm2_5`);
+  return { pm10: j.current.pm10, pm25: j.current.pm2_5 };
+}
+let WX = null, AQ = null, wxAt = 0, wxKey = '';
+async function loadWeather() {
+  const p = S?.place; if (!p) { WX = AQ = null; return renderWx(); }
+  const key = p.lat + ',' + p.lon;
+  if (key === wxKey && Date.now() - wxAt < 30 * 60e3) return;
+  wxKey = key; wxAt = Date.now();
+  let w = null;
+  for (const src of [fromOpenMeteo, fromMet]) { try { w = await src(p); break; } catch {} } // 막히면 다음 서비스로
+  if (w) WX = w; else wxAt = Date.now() - 25 * 60e3; // 둘 다 실패하면 이전 값을 두고 5분 뒤 다시
+  AQ = await fromAir(p).catch(() => AQ);
+  renderWx();
+}
+const deg = (c) => Math.round(S.place?.unit === 'F' ? c * 9 / 5 + 32 : c) + '°';
+const DUST_COL = ['#2e7ad1', '#2e9e5b', '#e67e22', '#e74c3c'];
+const grade = (v, cut) => v == null ? -1 : cut.findIndex((c) => v <= c) === -1 ? 3 : cut.findIndex((c) => v <= c);
+function outfit(w, aqLv) {
+  const f = w.feels ?? w.temp, i = [28, 23, 20, 17, 12, 9, 5].findIndex((c) => f >= c);
+  const tips = [t('wear')[i === -1 ? 7 : i]];
+  if (w.max - w.min >= 10) tips.push(t('tipGap'));
+  if (w.hours.some((h) => h.pop >= 50 || ['rain', 'snow', 'storm'].includes(h.kind))) tips.push(t('tipUmbrella'));
+  if (aqLv >= 2) tips.push(t('tipMask'));
+  return tips.join(' · ');
+}
+function renderWx() {
+  const el = $('#wx'); if (!el || !S) return;
+  if (!S.place) { el.innerHTML = isParent() ? `<span class="cmemo">${t('wxNone')}</span>` : ''; return fitAll(); }
+  if (!WX) { el.innerHTML = ''; return fitAll(); }
+  const night = (h) => h < 6 || h >= 19;
+  const icon = (k, h) => k === 'sun' && night(h) ? '🌙' : WX_ICON[k];
+  const g10 = grade(AQ?.pm10, [30, 80, 150]), g25 = grade(AQ?.pm25, [15, 35, 75]), lv = Math.max(g10, g25);
+  el.innerHTML = `<div class="wrow"><span class="wnow">${icon(WX.kind, new Date().getHours())} ${deg(WX.temp)}</span>
+      <span class="wmm">↓${deg(WX.min)} ↑${deg(WX.max)}${WX.feels != null ? `<br><small>${t('feels')} ${deg(WX.feels)}</small>` : ''}</span>
+      <div class="whours">${WX.hours.slice(1, 9).map((h) => `<span class="wh">${t('hourFmt')(h.h)}<i>${icon(h.kind, h.h)}</i>${deg(h.temp)}${h.pop >= 30 ? `<small>💧${h.pop}%</small>` : ''}</span>`).join('')}</div></div>
+    <div class="wrow">${lv >= 0 ? `<span class="dust" style="--c:${DUST_COL[lv]}">${t('dust10')} ${t('dustLv')[g10] ?? '-'} · ${t('dust25')} ${t('dustLv')[g25] ?? '-'}</span>` : ''}
+      <span class="tip" title="${t('wxFrom')} ${WX.src}">${outfit(WX, lv)}</span></div>`;
+  fitAll(); // 날씨가 들어오면 위 칸 높이가 바뀜
+}
+
+// ---------- 한 달 달력 ----------
+let calMonth = null, calSel = null;
+function renderCal() {
+  const [y, m] = calMonth, first = new Date(y, m, 1), td = today();
+  $('#calTitle').textContent = first.toLocaleDateString(t('locale'), { year: 'numeric', month: 'long' });
+  let html = t('wdays').map((w) => `<div class="wd">${w}</div>`).join('');
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(y, m, 1 - first.getDay() + i), ds = ymd(d);
+    if (i >= 35 && d.getMonth() !== m) break;
+    html += `<button class="cell ${d.getMonth() !== m ? 'other' : ''} ${ds === td ? 'today' : ''} ${ds === calSel ? 'sel' : ''}" data-calday="${ds}"><b>${d.getDate()}</b>
+      ${dayItems(ds).map((it) => `<span class="ci ${it.off ? 'off' : ''}" style="--c:${it.kid ? memberColor(it.kid) : 'var(--mute)'}">${it.time} ${esc(it.title)}${it.memo ? ' · ' + esc(it.memo) : ''}</span>`).join('')}</button>`;
+  }
+  $('#calGrid').innerHTML = html;
+  const items = calSel ? dayItems(calSel) : [];
+  $('#calDetail').innerHTML = calSel ? `<h3>${dayLabel(calSel)}</h3><ul>${items.map((it) => `<li class="${it.off ? 'off' : ''}">
+      <div><b>${it.time}</b> ${it.kid ? memberFace(it.kid) + ' ' : ''}${esc(it.title)}${tags(it)}${it.who && !it.kid ? ` <span class="cmemo">(${esc(it.who)})</span>` : ''}</div>
+      ${it.memo ? `<div class="cmemo">📝 ${esc(it.memo)}</div>` : ''}${it.prep ? `<div class="cmemo">${t('prep')}: ${esc(it.prep)}</div>` : ''}
+      ${isParent() && it.kind === 'class' ? `<div class="row"><button class="ghost" data-classoff="${it.c.id}">${t(it.off ? 'unmarkOff' : 'markOff')}</button></div>` : ''}
+      ${isParent() && it.kind === 'makeup' ? `<div class="row"><button class="ghost" data-delmakeup="${it.c.id}|${it.time}">✕ ${t('makeup')}</button></div>` : ''}
+      ${isParent() && it.kind === 'event' ? `<div class="row"><button class="ghost" data-del="delEvent:${it.e.id}">✕</button></div>` : ''}</li>`).join('') || `<p class="empty">${t('noAgenda')}</p>`}</ul>
+    <div class="row"><button class="ghost" data-open="eventDlg" data-date="${calSel}">${t('addHere')}</button></div>
+    ${isParent() && S.classes.length ? `<form class="row" data-makeup><select name="id">${S.classes.map((c) => `<option value="${c.id}">${memberFace(c.kid)} ${esc(c.name)}</option>`).join('')}</select>
+      <input name="time" type="time" required><button>${t('addMakeup')}</button></form>` : ''}` : '';
+}
+function openCal() { const n = new Date(); calMonth = [n.getFullYear(), n.getMonth()]; calSel = today(); renderCal(); $('#calDlg').showModal(); }
 
 // ---------- 게시판 ----------
 const faceBtn = (n, k) => {
@@ -404,6 +710,7 @@ function noteRow(n, td) {
   const meta = n.doneAt ? `${t('doneAt')} ${md(ymd(new Date(n.doneAt)))} · ${t('from')} ${esc(memberName(n.from))}`
     : `${future ? md(n.start) + ' ~ ' : ''}${t('due')} ${md(n.end)}${over ? ' · ' + t('overdue') : ''}${n.alarm ? ' · ⏰ ' + n.alarm : ''}`;
   return `<li class="note ${future ? 'future' : ''} ${over ? 'over' : ''}">
+    <span class="box">${n.doneAt ? '✅' : '⬜️'}</span>
     <div style="min-width:0"><div class="ntext">${esc(n.text)}</div><div class="nmeta">${meta}</div></div>
     <div class="nfaces">${n.to.map((k) => faceBtn(n, k)).join('')}</div>
     <button class="x" data-del="delNote:${n.id}">✕</button></li>`;
@@ -530,16 +837,41 @@ function checkAlarms() {
     rung.add(n.id + td);
     const left = n.to.filter((k) => !n.doneBy[k] && kidOf(k));
     if (!left.length) continue;
-    $('#alarmText').textContent = n.text;
-    $('#alarmFaces').innerHTML = left.map((k) => `<button class="face big" style="--c:${kidOf(k).color}" data-note="${n.id}:${k}">${esc(kidOf(k).emoji)}<b>${esc(kidOf(k).name)}</b></button>`).join('');
-    $('#alarm').hidden = false;
-    let n2 = 0; clearInterval(alarmTimer); beep();
-    alarmTimer = setInterval(() => { if (++n2 > 30) stopAlarm(); else beep(); }, 2000); // 1분 동안 울림
+    ring(n.text, left.map((k) => `<button class="face big" style="--c:${kidOf(k).color}" data-note="${n.id}:${k}">${esc(kidOf(k).emoji)}<b>${esc(kidOf(k).name)}</b></button>`).join(''));
   }
+  // 학원 15분 전: 정확한 분을 놓쳐도(화면 멈춤 등) 5분 안에는 꼭 울림, 휴강이면 안 울림
+  const now = new Date(), mins = now.getHours() * 60 + now.getMinutes();
+  for (const it of dayItems(td)) {
+    if (!it.c || it.off) continue;
+    const [h, m] = it.time.split(':').map(Number), at = h * 60 + m - 15, key = `${it.c.id}|${td}|${it.time}`;
+    if (mins < at || mins >= at + 5 || rung.has(key)) continue;
+    rung.add(key);
+    const k = kidOf(it.kid); if (!k) continue;
+    ring(`${t('classAlarm').replace('{name}', it.title)}${it.memo ? '\n📝 ' + it.memo : ''}${it.prep ? `\n${t('prep')}: ${it.prep}` : ''}`,
+      `<button class="face big" style="--c:${k.color}" data-alarmok>${esc(k.emoji)}<b>${esc(k.name)}</b></button>`);
+  }
+}
+function ring(text, faces) {
+  $('#alarmText').textContent = text;
+  $('#alarmFaces').innerHTML = faces;
+  $('#alarm').hidden = false;
+  let n2 = 0; clearInterval(alarmTimer); beep();
+  alarmTimer = setInterval(() => { if (++n2 > 30) stopAlarm(); else beep(); }, 2000); // 1분 동안 울림
 }
 function stopAlarm() { clearInterval(alarmTimer); $('#alarm').hidden = true; }
 
 // ---------- 설정 ----------
+function classForm(k, c = {}) {
+  return `<form class="col" data-class="${c.id || ''}" data-classkid="${k.id}">
+    <div class="row"><input name="name" value="${esc(c.name || '')}" placeholder="${t('className')}" maxlength="30" required><input name="time" type="time" value="${c.time || ''}" required style="flex:0 0 8rem"></div>
+    <div class="days">${t('wdays').map((w, i) => `<label class="chip" style="--c:${k.color}"><input type="checkbox" name="days" value="${i}" ${c.days?.includes(i) ? 'checked' : ''}>${w}</label>`).join('')}</div>
+    <input name="memo" value="${esc(c.memo || '')}" placeholder="${t('classMemo')}" maxlength="60">
+    <input name="prep" value="${esc(c.prep || '')}" placeholder="${t('classPrep')}" maxlength="60">
+    <span class="cmemo">${t('period')}</span>
+    <div class="row"><input name="start" type="date" value="${c.start || ''}"> ~ <input name="end" type="date" value="${c.end || ''}"></div>
+    <div class="row"><button>${t('saveClass')}</button>${c.id ? `<button type="button" class="x" data-delclass="${c.id}">🗑</button>` : ''}</div></form>`;
+}
+let inviteLink = '';
 function renderSettings() {
   $('#settingsBody').innerHTML = S.kids.map((k) => `<section>
     <form class="row" data-kid="${k.id}">
@@ -548,11 +880,41 @@ function renderSettings() {
       <input name="color" type="color" value="${k.color}">
       <button>${t('save')}</button>
     </form>
-    <ul style="margin:.6rem 0">${k.tasks.map((x) => `<li>${esc(x.text)}<button class="x" style="margin-left:auto" data-deltask="${k.id}:${x.id}">🗑</button></li>`).join('')}</ul>
-    <form class="row" data-addtask="${k.id}"><input name="text" placeholder="${t('taskPh')}" maxlength="30" required><button>${t('add')}</button></form>
+    <form class="row" data-deposit="${k.id}" style="margin-top:.5rem"><span style="font-weight:700">💰 ${t('deposit')} $</span>
+      <input name="amount" type="number" min="0" max="100000" step="0.01" value="${((k.cents || 0) / 100).toFixed(2)}" required><button>${t('save')}</button></form>
+    ${SLOTS.map((s) => `<h4 style="margin-top:.8rem">${t('slot_' + s)}</h4>
+    <div class="col">${slotTasks(k, s).map((x) => `<form class="row" data-edittask="${k.id}:${x.id}">
+      <input name="text" value="${esc(x.text)}" maxlength="30" required><button>${t('save')}</button>
+      <button type="button" class="x" data-deltask="${k.id}:${x.id}">🗑</button></form>`).join('')}
+    <form class="row" data-addtask="${k.id}"><input type="hidden" name="slot" value="${s}">
+      <input name="text" placeholder="${t('taskPh')}" maxlength="30" required><button>${t('add')}</button></form></div>`).join('')}
+    <h4 style="margin-top:.8rem">${t('classes')}</h4>
+    <div class="col">${S.classes.filter((c) => c.kid === k.id).map((c) => `<details class="cls"><summary>${esc(c.name)} · ${c.days.map((d) => t('wdays')[d]).join(' ')} ${c.time}</summary>${classForm(k, c)}</details>`).join('')}
+    <details class="cls"><summary>${t('addClass')}</summary>${classForm(k)}</details></div>
   </section>`).join('') + `<section><h4>${t('devices')}</h4><ul>${S.devices.map((d) => `<li>
     ${d.role === 'parent' ? '🔑' : '🖥️'} ${esc(d.name)} ${d.member ? `(${memberFace(d.member)} ${t(d.member)})` : ''} ${d.me ? t('thisDevice') : ''}
-    ${d.me ? '' : `<button class="x" style="margin-left:auto" data-deldev="${d.id}">${t('unregister')}</button>`}</li>`).join('')}</ul></section>
+    ${d.me ? '' : `<button class="x" style="margin-left:auto" data-deldev="${d.id}">${t('unregister')}</button>`}</li>`).join('')}</ul>
+    <h4 style="margin-top:.8rem">${t('addDevice')}</h4>
+    <form class="col" data-invite><div class="roles">
+      <label><input type="radio" name="role" value="family" checked><span>${t('roleFamily')}</span></label>
+      <label><input type="radio" name="role" value="parent"><span>${t('roleParent')}</span></label></div>
+      <input name="current" type="password" inputmode="numeric" autocomplete="off" placeholder="${t('invitePin')}">
+      <button>${t('inviteMake')}</button></form>
+    ${inviteLink ? `<div class="col"><input readonly value="${esc(inviteLink)}" id="inviteLink">
+      <div class="row"><button data-copylink>${t('copy')}</button>${navigator.share ? `<button class="ghost" data-sharelink>${t('share')}</button>` : ''}</div>
+      <p class="cmemo">${t('inviteHelp')}</p></div>` : ''}</section>
+    <section><h4>${t('wxTitle')}</h4>
+      ${S.place ? `<p><b>📍 ${esc(S.place.name)}</b></p>` : ''}
+      <form class="row" data-place><input name="q" placeholder="${t('wxCity')}" maxlength="60" required>
+        <select name="unit" style="flex:0 0 4.5rem"><option ${S.place?.unit !== 'F' ? 'selected' : ''}>C</option><option ${S.place?.unit === 'F' ? 'selected' : ''}>F</option></select>
+        <button>${t('wxFind')}</button></form>
+      <div class="row"><button class="ghost" data-geo>${t('wxGeo')}</button>${S.place ? `<button class="ghost" data-noplace>${t('wxClear')}</button>` : ''}</div></section>
+    <section><h4>${t('calTitle')}</h4>${S.cal.on
+      ? `<p>${t('calOn')} · ${t('calLast')}: ${S.cal.at ? new Date(S.cal.at).toLocaleString(t('locale'), { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—'}
+         ${S.cal.err ? `<br>⚠️ ${t('e_' + S.cal.err)}` : ''}</p>
+         <div class="row"><button data-calnow>${t('calNow')}</button><button class="ghost" data-caloff>${t('calOff')}</button></div>`
+      : `<form class="row" data-cal><input name="url" type="password" autocomplete="off" placeholder="${t('calPh')}" maxlength="2000" required><button>${t('calConnect')}</button></form>`}
+      <p class="cmemo">${t('calNote')}</p></section>
     <section><h4>${t('pinTitle')}</h4><form class="col" data-pin>
       <input name="current" type="password" inputmode="numeric" pattern="\\d{4,8}" placeholder="${t('curPin')}" required autocomplete="off">
       <input name="pin" type="password" inputmode="numeric" pattern="\\d{4,8}" placeholder="${t('newPin')}" required autocomplete="new-password">
@@ -564,6 +926,23 @@ document.addEventListener('click', async (e) => {
   const b = e.target.closest('button'); if (!b) return;
   const d = b.dataset;
   try {
+    if (d.copylink !== undefined) { await navigator.clipboard.writeText(inviteLink).then(() => alert(t('copied')), () => $('#inviteLink').select()); }
+    if (d.sharelink !== undefined) await navigator.share({ url: inviteLink }).catch(() => {});
+    if (d.geo !== undefined) navigator.geolocation.getCurrentPosition(
+      (p) => act('setPlace', { name: t('wxHere'), lat: p.coords.latitude, lon: p.coords.longitude, unit: S.place?.unit || 'C' }).catch(() => {}),
+      (e) => alert(e.message), { timeout: 10000 });
+    if (d.noplace !== undefined) await act('setPlace', { name: '' });
+    if (d.more) openList(d.more);
+    if (d.calopen !== undefined) openCal();
+    if (d.calmove) { calMonth = [calMonth[0], calMonth[1] + +d.calmove]; const x = new Date(calMonth[0], calMonth[1], 1); calMonth = [x.getFullYear(), x.getMonth()]; renderCal(); }
+    if (d.calday) { calSel = d.calday; renderCal(); }
+    if (d.classoff) await act('classOff', { id: d.classoff, date: calSel });
+    if (d.delmakeup) { const [id, time] = d.delmakeup.split('|'); await act('delMakeup', { id, date: calSel, time }); }
+    if (d.delclass && confirm(t('confirmClass'))) await act('delClass', { id: d.delclass });
+    if (d.calnow !== undefined) { await api('/api?r=calsync', { now: true }); await load(); }
+    if (d.caloff !== undefined && confirm(t('confirmCalOff'))) await act('setCal', { url: '' });
+    if (d.routine) { routineOpen = { kid: d.routine, slot: nowSlot() }; renderRoutine(); $('#routineDlg').showModal(); }
+    if (d.slot) { routineOpen.slot = d.slot; renderRoutine(); }
     if (d.toggle) { const [kidId, taskId] = d.toggle.split(':'); await act('toggle', { kidId, taskId, date: today() }); }
     if (d.del) { const [type, id] = d.del.split(':'); if (confirm(t('confirmDel'))) await act(type, { id }); }
     if (d.open) {
@@ -574,12 +953,12 @@ document.addEventListener('click', async (e) => {
         dlg.querySelector('[name=start]').value = today(); dlg.querySelector('[name=end]').value = addDays(6);
       }
       dlg.querySelectorAll('.whoSel').forEach((s) => s.innerHTML = whoList().map((w) => `<option>${esc(w)}</option>`).join(''));
-      if (dlg.querySelector('[name=date]')) dlg.querySelector('[name=date]').value = today();
+      if (dlg.querySelector('[name=date]')) dlg.querySelector('[name=date]').value = d.date || today();
       dlg.showModal();
     }
     if (d.close !== undefined) b.closest('dialog').close();
     if (d.lang !== undefined) { lang = lang === 'ko' ? 'en' : 'ko'; try { localStorage.setItem('lang', lang); } catch {} applyLang(); }
-    if (b.id === 'openSettings') { renderSettings(); $('#settingsDlg').showModal(); }
+    if (b.id === 'openSettings') { inviteLink = ''; renderSettings(); $('#settingsDlg').showModal(); }
     if (b.id === 'openMail') openMail();
     if (d.deltask) { const [kidId, taskId] = d.deltask.split(':'); if (confirm(t('confirmTask'))) await act('delTask', { kidId, taskId }); }
     if (d.deldev && confirm(t('confirmDev'))) await act('delDevice', { id: d.deldev });
@@ -607,6 +986,9 @@ document.addEventListener('click', async (e) => {
     if (d.push !== undefined) await enablePush();
   } catch {} // 오류 안내는 api()에서
 });
+document.addEventListener('change', (e) => { // °C/°F는 고르면 바로 적용
+  if (e.target.matches('[data-place] [name=unit]') && S.place) act('setPlace', { ...S.place, unit: e.target.value }).catch(() => {});
+});
 document.addEventListener('submit', async (e) => {
   const f = e.target, ds = f.dataset, fd = new FormData(f), v = Object.fromEntries(fd);
   if (f.id === 'gateForm') return;
@@ -615,6 +997,20 @@ document.addEventListener('submit', async (e) => {
     if (ds.act) { await act(ds.act, v); f.reset(); f.closest('dialog').close(); }
     if (ds.kid) await act('saveKid', { id: ds.kid, ...v });
     if (ds.addtask) await act('addTask', { kidId: ds.addtask, ...v });
+    if (ds.deposit) { await act('setDeposit', { kidId: ds.deposit, ...v }); alert(t('saved')); }
+    if ('class' in ds) {
+      if (!fd.getAll('days').length) return alert(t('pickDays'));
+      await act('saveClass', { ...v, id: ds.class || undefined, kid: ds.classkid, days: fd.getAll('days').map(Number) });
+    }
+    if ('makeup' in ds) await act('addMakeup', { ...v, date: calSel });
+    if ('cal' in ds) { await act('setCal', v); f.reset(); }
+    if (ds.edittask) { const [kidId, taskId] = ds.edittask.split(':'); await act('editTask', { kidId, taskId, ...v }); }
+    if ('invite' in ds) { const r = await api('/api?r=action', { type: 'invite', ...v }).finally(() => f.reset()); inviteLink = `${location.origin}/?join=${r.code}`; renderSettings(); }
+    if ('place' in ds) {
+      const g = await getJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(v.q)}&count=1&language=${lang}`).catch(() => ({}));
+      const r = g.results?.[0]; if (!r) return alert(t('wxNotFound'));
+      await act('setPlace', { name: [r.name, r.admin1].filter(Boolean).join(', '), lat: r.latitude, lon: r.longitude, unit: v.unit }); f.reset();
+    }
     if ('pin' in ds) { await act('changePin', v); f.reset(); alert(t('pinChanged')); }
     if ('addnote' in ds) {
       if (!fd.getAll('to').length) return alert(t('pickTo'));
@@ -629,9 +1025,14 @@ function tick() {
   const n = new Date();
   $('#clock').textContent = n.toLocaleTimeString(t('locale'), { hour: 'numeric', minute: '2-digit' });
   $('#date').textContent = n.toLocaleDateString(t('locale'), { month: 'long', day: 'numeric', weekday: 'long' });
-  if (S && day !== today()) { day = today(); render(); }
+  const night = n.getHours() >= 19 || n.getHours() < 6; document.body.classList.toggle('night', night);
+  document.querySelector('meta[name=theme-color]').content = night ? '#121327' : '#FFDE59';
+  if (S && day + slotNow !== today() + nowSlot()) { day = today(); slotNow = nowSlot(); render(); } // 자정·시간대가 바뀌면 다시 그림
   checkAlarms();
+  if (S) loadWeather();
+  if (S?.cal.on && Date.now() - calTry > 30 * 60e3) { calTry = Date.now(); api('/api?r=calsync', {}).catch(() => {}); }
 }
+let calTry = 0;
 setInterval(tick, 5000); applyLang();
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S) checkVer().catch(() => {}); });
 boot();
