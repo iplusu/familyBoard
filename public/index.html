@@ -561,16 +561,17 @@ const fitList = (ul) => fitBox(ul.closest('.card'), ul, [...ul.children].filter(
 // 아이 카드: 할 일 목록은 남는 높이만큼 보이고 길면 손가락으로 스크롤. 오늘 일정은 2개까지 보이고,
 // 할 일이 2줄도 안 보일 만큼 좁으면 일정을 더 줄임. 숨긴 일정은 "+N개 더" → 달력
 function fitCard(card) {
-  const ag = card.querySelector('.agenda'), todo = card.querySelector('.todo');
-  if (ag) {
-    const items = [...ag.querySelectorAll('.ag')];
-    ag.querySelector(':scope > .more')?.remove();
-    items.forEach((x, i) => x.hidden = i >= 2);
+  const ags = [...card.querySelectorAll('.agenda')], todo = card.querySelector('.todo');
+  if (ags.length) {
+    ags.forEach((ag) => { ag.querySelector(':scope > .more')?.remove(); ag.querySelectorAll('.ag').forEach((x, i) => x.hidden = i >= 2); });
+    const items = ags.flatMap((ag) => [...ag.querySelectorAll('.ag')]); // 공간이 모자라면 내일 것부터 숨김
     const tight = () => todo && todo.clientHeight < Math.min(todo.scrollHeight, 150) || card.scrollHeight > card.clientHeight + 1;
     let n = items.length - 1;
     while (n >= 0 && (items[n].hidden || tight())) { items[n].hidden = true; n--; if (n >= 0 && !items[n].hidden && !tight()) break; }
-    const hid = items.filter((x) => x.hidden).length;
-    if (hid) { const more = document.createElement('div'); more.className = 'more'; more.innerHTML = `<button class="ghost" data-calopen>${t('more').replace('{n}', hid)}</button>`; ag.append(more); }
+    for (const ag of ags) {
+      const hid = ag.querySelectorAll('.ag[hidden]').length;
+      if (hid) { const more = document.createElement('div'); more.className = 'more'; more.innerHTML = `<button class="ghost" data-calopen>${t('more').replace('{n}', hid)}</button>`; ag.append(more); }
+    }
   }
   if (todo) scrollHint(todo);
 }
@@ -614,13 +615,11 @@ function dayItems(d) {
   for (const e of extEvents()) if (e.date === d) out.push({ kind: 'ext', kid: e.kid, who: e.who, time: e.time, title: e.title, memo: e.loc });
   return out.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 }
-const agendaDay = () => new Date().getHours() >= 18 ? addDays(1) : today(); // 저녁에는 내일 것
 const tags = (it) => (it.off ? `<span class="tag">${t('off')}</span>` : '') + (it.kind === 'makeup' ? `<span class="tag mk">${t('makeup')}</span>` : '');
-function agendaHtml(k) {
-  const d = agendaDay(), items = dayItems(d).filter((it) => it.kid === k.id);
-  return `<div class="agenda"><h3>${t(d === today() ? 'agToday' : 'agTomorrow')}</h3>${items.map((it) => `<div class="ag ${it.off ? 'off' : ''}">
+function agendaHtml(k) { // 오늘 + 내일
+  return [[today(), 'agToday'], [addDays(1), 'agTomorrow']].map(([d, h]) => `<div class="agenda"><h3>${t(h)}</h3>${dayItems(d).filter((it) => it.kid === k.id).map((it) => `<div class="ag ${it.off ? 'off' : ''}">
     <span class="tm">${it.time}</span>${esc(it.title)}${tags(it)}${it.memo ? ` <span class="memo">· ${esc(it.memo)}</span>` : ''}
-${it.prep && !it.off ? ` <span class="prep">· 🎒 ${esc(it.prep)}</span>` : ''}</div>`).join('') || `<p class="empty">${t('noAgenda')}</p>`}</div>`;
+${it.prep && !it.off ? ` <span class="prep">· 🎒 ${esc(it.prep)}</span>` : ''}</div>`).join('') || `<p class="empty">${t('noAgenda')}</p>`}</div>`).join('');
 }
 
 // ---------- 날씨: Open-Meteo, 막히면 MET Norway (둘 다 키 없음). 미세먼지는 Open-Meteo 대기질 ----------
