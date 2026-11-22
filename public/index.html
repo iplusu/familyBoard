@@ -72,8 +72,12 @@
   .todohead .rw { font-size: .75em; font-weight: 800; padding: .15rem .6rem; border-radius: 99px; background: var(--cream); white-space: nowrap; }
   .todohead .rw.got { background: var(--home); color: var(--homeTx); }
   .todolist { gap: .3rem; }
-  .todolist li { font-size: clamp(1.1rem, 2.1vw, 1.45rem); font-weight: 700; padding: .3rem .7rem; background: var(--cream); }
-  .todolist li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .todolist li { font-size: clamp(1.1rem, 2.1vw, 1.45rem); font-weight: 700; padding: 0; background: var(--cream); }
+  .todolist li.more { background: none; }
+  .tdo { width: 100%; display: flex; align-items: center; gap: .5rem; text-align: left; background: none; color: var(--ink); font: inherit; padding: .45rem .7rem; border-radius: 16px; min-height: 48px; }
+  .tdo:active { background: color-mix(in srgb, var(--c) 25%, var(--cream)); }
+  .todolist li.done { background: color-mix(in srgb, var(--c) 15%, var(--cream)); }
+  .todolist li .tdo span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .todolist li.done span { text-decoration: line-through; opacity: .55; }
   .bar { height: 1.6rem; border-radius: 99px; background: var(--track); overflow: hidden; }
   .bar i { display: block; height: 100%; background: var(--c); border-radius: 99px; transition: width .4s; }
@@ -519,14 +523,14 @@ function render() {
   const unread = myUnread();
   $('#mailBadge').hidden = !unread; $('#mailBadge').textContent = unread;
 
-  // 홈: 오늘 할 일 목록은 보기만(✅/⬜ + 글자). 체크는 "전체 보기"에서 글자를 읽고.
+  // 홈: 오늘 할 일 목록. 카드에서 바로 눌러 체크, 끝낸 일은 아래로
   $('#kids').innerHTML = S.kids.map((k) => {
     const left = k.tasks.filter((x) => x.doneOn !== td).length, done = k.tasks.length - left;
     return `<section class="card kid" style="--c:${k.color}" data-kid="${k.id}">
       <h2><span class="emoji">${esc(k.emoji)}</span>${esc(k.name)}<span class="deposit">💰 ${money(k.cents)}</span></h2>
       ${k.tasks.length ? `<div class="todo"><div class="todohead"><div class="bar"><i style="width:${done / k.tasks.length * 100}%"></i></div><b>${done}/${k.tasks.length}</b>
           <span class="rw ${k.rewardOn === td ? 'got' : ''}">${k.rewardOn === td ? t('rewardGot') : t('rewardLeft').replace('{n}', left)}</span></div>
-        <ul class="todolist">${[...k.tasks].sort((a, b) => (a.doneOn === td) - (b.doneOn === td)).map((x) => `<li class="${x.doneOn === td ? 'done' : ''}">${x.doneOn === td ? '✅' : '⬜️'} <span>${esc(x.text)}</span></li>`).join('')}</ul></div>`
+        <ul class="todolist">${[...k.tasks].sort((a, b) => (a.doneOn === td) - (b.doneOn === td)).map((x) => `<li class="${x.doneOn === td ? 'done' : ''}"><button class="tdo" data-toggle="${k.id}:${x.id}">${x.doneOn === td ? '✅' : '⬜️'} <span>${esc(x.text)}</span></button></li>`).join('')}</ul></div>`
         : `<p class="empty">${t('noTasks')}</p>`}
       ${agendaHtml(k)}
       <button class="seeall" data-routine="${k.id}">${t('seeAll')}</button>
@@ -588,7 +592,7 @@ const money = (c) => '$' + ((c || 0) / 100).toFixed(2);
 let routineOpen = null;
 function renderRoutine() {
   const k = kidOf(routineOpen?.kid); if (!k) return $('#routineDlg').close();
-  const td = today(), items = k.tasks, done = items.filter((x) => x.doneOn === td).length;
+  const td = today(), items = [...k.tasks].sort((a, b) => (a.doneOn === td) - (b.doneOn === td)), done = items.filter((x) => x.doneOn === td).length;
   $('#routineBody').innerHTML = `<div class="row"><h3>${esc(k.emoji)} ${esc(k.name)}</h3>
       <button type="button" class="ghost" data-close style="margin-left:auto">${t('close')}</button></div>
     <div class="col" id="routineList" style="--c:${k.color}">${items.map((x) => `<button class="task ${x.doneOn === td ? 'done' : ''}" data-toggle="${k.id}:${x.id}">
@@ -954,7 +958,12 @@ document.addEventListener('click', async (e) => {
     if (d.calnow !== undefined) { await api('/api?r=calsync', { now: true }); await load(); }
     if (d.caloff !== undefined && confirm(t('confirmCalOff'))) await act('setCal', { url: '' });
     if (d.routine) { routineOpen = { kid: d.routine }; renderRoutine(); $('#routineDlg').showModal(); }
-    if (d.toggle) { const [kidId, taskId] = d.toggle.split(':'); await act('toggle', { kidId, taskId, date: today() }); }
+    if (d.toggle) { // 끝내면 딩, 하루 할 일을 다 끝내면 축하음
+      const [kidId, taskId] = d.toggle.split(':');
+      await act('toggle', { kidId, taskId, date: today() });
+      const k = kidOf(kidId);
+      if (k?.tasks.find((x) => x.id === taskId)?.doneOn === today()) k.rewardOn === today() ? beep(4, 1320) : beep(1, 1180);
+    }
     if (d.del) { const [type, id] = d.del.split(':'); if (confirm(t('confirmDel'))) await act(type, { id }); }
     if (d.open) {
       const dlg = $('#' + d.open);
