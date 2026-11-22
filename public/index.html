@@ -29,7 +29,7 @@
   #date { font-size: clamp(1.3rem, 2.6vw, 2rem); font-weight: 800; color: var(--gray); white-space: nowrap; }
   #clock { white-space: nowrap; font-size: clamp(3rem, 6.4vw, 5rem); font-weight: 900; letter-spacing: -.03em; margin-top: .15rem; }
   #wx { grid-area: wx; }
-  header .right { grid-area: right; justify-self: end; display: flex; flex-wrap: nowrap; gap: .4rem; align-items: center; color: var(--mute); font-size: .85rem; white-space: nowrap; overflow: hidden; max-width: 100%; }
+  header .right { grid-area: right; justify-self: end; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .3rem .4rem; align-items: center; color: var(--mute); font-size: .85rem; white-space: nowrap; max-width: 100%; }
   header .right button { padding: .25rem .7rem; border-radius: 12px; font-size: .9rem; }
   header .right #mePick { display: flex; gap: .3rem; align-items: center; }
   #openMail { font-weight: 800; }
@@ -43,6 +43,8 @@
   .wh { display: flex; flex-direction: column; align-items: center; font-size: .85rem; font-weight: 700; padding: .15rem .35rem; border-radius: 10px; background: var(--card); min-width: 2.9rem; }
   .wh i { font-style: normal; font-size: 1.1rem; }
   .wh small { color: #2e7ad1; font-size: .7rem; }
+  .wh em { font-style: normal; color: var(--mute); font-weight: 600; margin-left: .2em; }
+  .wh.now { outline: 2px solid var(--ink); }
   .dust { padding: .1rem .6rem; border-radius: 99px; background: var(--c); color: #fff; font-weight: 800; white-space: nowrap; font-size: .95rem; }
   .tip { font-weight: 700; font-size: clamp(.95rem, 1.6vw, 1.15rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .badge { display: inline-block; min-width: 1.6em; margin-left: .4em; padding: 0 .45em; border-radius: 99px; background: #e74c3c; color: #fff; font-size: .85em; text-align: center; }
@@ -146,9 +148,9 @@
   .side .card h2 .hist { padding: .2rem .5rem; }
   .side ul { gap: .35rem; }
   #events { display: flex; flex-direction: column; gap: .5rem; min-height: 0; flex: 1; }
-  .eg { display: flex; flex-direction: column; min-height: 0; flex: 0 1 auto; }
+  .eg { display: flex; flex-direction: column; min-height: 0; flex: 1 1 0; }
   .eg h3 { margin: 0 0 .25rem; font-size: 1rem; color: var(--c); border-bottom: 3px solid var(--c); padding-bottom: .1rem; flex: none; }
-  .eg ul { overflow-y: auto; min-height: 3.3rem; overscroll-behavior: contain; }
+  .eg ul { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
   .eg ul.more-below { -webkit-mask-image: linear-gradient(#000 calc(100% - 2rem), transparent); mask-image: linear-gradient(#000 calc(100% - 2rem), transparent); }
   .side li.ev { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .1rem .5rem; }
   .side li.ev .when { grid-column: 1 / -1; grid-row: 1; }
@@ -353,7 +355,7 @@ const L = {
     copy: '복사', promotePin: '부모 기기로 바꾸려면 PIN 입력', confirmDevMe: '이 기기의 등록을 해제할까요? 다시 쓰려면 PIN으로 등록해야 해요.', e_last_parent: '부모 기기가 하나는 남아 있어야 해요. 다른 부모 기기를 먼저 등록해 주세요.', invitePin: '부모 기기 링크는 PIN 확인 (가족 화면은 비워 두기)', e_weak_pin: '너무 쉬운 PIN이에요 (0000, 1234 같은 것). 다른 숫자로 정해 주세요.', share: '공유', copied: '복사했어요', joinMsg: '등록 링크로 들어왔어요. 이 기기 이름만 정해 주세요.', e_bad_link: '링크가 만료됐거나 이미 쓰였어요. 부모 기기에서 새 링크를 만들어 주세요.',
     wxTitle: '🌤 날씨 위치', wxCity: '도시 이름 (예: 서울 마포구)', wxFind: '찾기', wxGeo: '📍 이 기기 위치 쓰기', wxHere: '우리 동네', wxNone: '🌤 설정에서 날씨 위치를 정해 주세요',
     wxNotFound: '그 이름으로 찾지 못했어요', wxClear: '위치 지우기', wxFrom: '날씨 정보', dust10: '미세', dust25: '초미세',
-    dustLv: ['좋음', '보통', '나쁨', '매우나쁨'], hourFmt: (h) => `${h}시`, feels: '체감',
+    dustLv: ['좋음', '보통', '나쁨', '매우나쁨'], feels: '체감',
     wear: ['🩳 반팔·반바지', '👕 반팔에 얇은 셔츠', '👔 얇은 긴팔', '🧥 얇은 겉옷이나 가디건', '🧥 자켓 입기', '🧥 두꺼운 겉옷', '🧶 코트에 니트', '🧣 패딩·목도리·장갑'],
     tipGap: '🌡 일교차 커요, 겉옷 챙기기', tipUmbrella: '☔ 우산 챙기기', tipMask: '😷 마스크 쓰기',
     pinTitle: '🔒 PIN 변경', curPin: '지금 PIN', newPin: '새 PIN (숫자 4~8자리)', pinChanged: 'PIN을 바꿨어요. 이미 등록된 기기는 그대로 쓸 수 있어요.',
@@ -388,7 +390,7 @@ const L = {
     copy: 'Copy', promotePin: 'Enter the PIN to make this a parent device', confirmDevMe: 'Remove this device? You will need the PIN to register it again.', e_last_parent: 'At least one parent device must remain. Register another parent device first.', invitePin: 'PIN (needed for a parent-device link only)', e_weak_pin: 'That PIN is too easy (like 0000 or 1234). Choose another one.', share: 'Share', copied: 'Copied', joinMsg: 'You opened a join link. Just name this device.', e_bad_link: 'This link expired or was already used. Create a new one on a parent device.',
     wxTitle: '🌤 Weather location', wxCity: 'City (e.g. Seoul)', wxFind: 'Find', wxGeo: "📍 Use this device's location", wxHere: 'Home', wxNone: '🌤 Set a weather location in Settings',
     wxNotFound: "Couldn't find that place", wxClear: 'Clear location', wxFrom: 'Weather by', dust10: 'PM10', dust25: 'PM2.5',
-    dustLv: ['Good', 'Moderate', 'Bad', 'Very bad'], hourFmt: (h) => `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`, feels: 'feels',
+    dustLv: ['Good', 'Moderate', 'Bad', 'Very bad'], feels: 'feels',
     wear: ['🩳 T-shirt and shorts', '👕 T-shirt, light shirt', '👔 Light long sleeves', '🧥 Light jacket or cardigan', '🧥 Wear a jacket', '🧥 Warm jacket', '🧶 Coat and sweater', '🧣 Puffer, scarf and gloves'],
     tipGap: '🌡 Big temperature swing, bring a layer', tipUmbrella: '☔ Take an umbrella', tipMask: '😷 Wear a mask',
     pinTitle: '🔒 Change PIN', curPin: 'Current PIN', newPin: 'New PIN (4–8 digits)', pinChanged: 'PIN changed. Devices already registered keep working.',
@@ -542,15 +544,14 @@ function render() {
 
   if ($('#notes')) $('#notes').innerHTML = activeNotes().sort((a, b) => a.end.localeCompare(b.end)).map((n) => noteRow(n, td)).join('') || `<p class="empty">${t('noNotes')}</p>`;
 
-  // 다가오는 일정: 아이별로 나누고, 아이가 정해지지 않은 일정은 '가족'에. 칸마다 길면 손가락으로 스크롤
+  // 다가오는 일정: 아이별로 같은 높이로 나누고, 아이가 정해지지 않은 가족 일정은 아이마다 👨‍👩‍👧 표시로 같이 보여 줌. 칸마다 스크롤
   const ev = [...S.events, ...extEvents().map((e) => ({ ...e, ext: true }))].filter((e) => e.date >= td)
     .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
   const kidOfEv = (e) => S.kids.find((k) => e.kid === k.id || e.who === k.name);
   const evGroup = (head, c, list) => `<section class="eg" style="--c:${c}"><h3>${head}</h3><ul>${list.slice(0, 20).map((e) => `<li class="ev ${e.date === td ? 'today' : ''}">
-    <span class="when">${dayLabel(e.date)} ${e.time}</span><span class="etitle">${esc(e.title)}</span></li>`).join('') || `<p class="empty">${t('noEvents')}</p>`}</ul></section>`;
-  const rest = ev.filter((e) => !kidOfEv(e));
-  $('#events').innerHTML = S.kids.map((k) => evGroup(`${esc(k.emoji)} ${esc(k.name)}`, k.color, ev.filter((e) => kidOfEv(e) === k))).join('')
-    + (rest.length ? evGroup(`👨‍👩‍👧 ${t('family')}`, '#8a7a6a', rest) : '');
+    <span class="when">${dayLabel(e.date)} ${e.time}</span><span class="etitle">${kidOfEv(e) ? '' : '👨‍👩‍👧 '}${esc(e.title)}</span></li>`).join('') || `<p class="empty">${t('noEvents')}</p>`}</ul></section>`;
+  $('#events').innerHTML = S.kids.map((k) => evGroup(`${esc(k.emoji)} ${esc(k.name)}`, k.color, ev.filter((e) => [k, undefined].includes(kidOfEv(e))))).join('')
+    || evGroup(`👨‍👩‍👧 ${t('family')}`, '#8a7a6a', ev);
 
   fitAll();
   keepScroll(scrolled);
@@ -577,12 +578,13 @@ function fitCard(card) {
     ags.forEach((ag) => { ag.querySelector(':scope > .more')?.remove(); ag.querySelectorAll('.ag').forEach((x, i) => x.hidden = i >= 2); });
     const items = ags.flatMap((ag) => [...ag.querySelectorAll('.ag')]); // 공간이 모자라면 내일 것부터 숨김
     const tight = () => todo && todo.clientHeight < Math.min(todo.scrollHeight, 150) || card.scrollHeight > card.clientHeight + 1;
-    let n = items.length - 1;
-    while (n >= 0 && (items[n].hidden || tight())) { items[n].hidden = true; n--; if (n >= 0 && !items[n].hidden && !tight()) break; }
-    for (const ag of ags) {
+    const mores = () => { for (const ag of ags) { // "+N개 더" 버튼까지 넣고 다시 재서, 그래도 넘치면 하나 더 숨김
+      ag.querySelector(':scope > .more')?.remove();
       const hid = ag.querySelectorAll('.ag[hidden]').length;
       if (hid) { const more = document.createElement('div'); more.className = 'more'; more.innerHTML = `<button class="ghost" data-calopen>${t('more').replace('{n}', hid)}</button>`; ag.append(more); }
-    }
+    } };
+    for (let n = items.length - 1; n >= 0; n--) { mores(); if (!items[n].hidden && !tight()) break; items[n].hidden = true; }
+    mores();
   }
   if (todo) scrollHint(todo);
 }
@@ -640,10 +642,12 @@ const metKind = (s = '') => /thunder/.test(s) ? 'storm' : /snow/.test(s) ? 'snow
 const getJSON = async (u) => { const r = await fetch(u, { signal: AbortSignal.timeout(8000) }); if (!r.ok) throw new Error(r.status); return r.json(); };
 async function fromOpenMeteo(p) {
   const j = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,apparent_temperature,weather_code`
-    + '&hourly=temperature_2m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=2');
+    + '&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=7');
+  const D = j.daily;
   const H = j.hourly, i0 = Math.max(0, H.time.findIndex((x) => x.slice(0, 13) >= j.current.time.slice(0, 13)));
   return { temp: j.current.temperature_2m, feels: j.current.apparent_temperature, kind: wmo(j.current.weather_code),
-    min: j.daily.temperature_2m_min[0], max: j.daily.temperature_2m_max[0], src: 'Open-Meteo',
+    min: D.temperature_2m_min[0], max: D.temperature_2m_max[0], src: 'Open-Meteo',
+    days: D.time.map((d, i) => ({ d, kind: wmo(D.weather_code[i]), min: D.temperature_2m_min[i], max: D.temperature_2m_max[i], pop: D.precipitation_probability_max?.[i] ?? 0 })),
     hours: H.time.slice(i0, i0 + 12).map((x, i) => ({ h: +x.slice(11, 13), temp: H.temperature_2m[i0 + i], kind: wmo(H.weather_code[i0 + i]), pop: H.precipitation_probability[i0 + i] ?? 0 })) };
 }
 async function fromMet(p) {
@@ -653,7 +657,16 @@ async function fromMet(p) {
     kind: metKind(x.data.next_1_hours?.summary.symbol_code), pop: (x.data.next_1_hours?.details.precipitation_amount ?? 0) > 0.1 ? 70 : 0 }));
   const day = ts.filter((x) => ymd(new Date(x.time)) === today()).map((x) => x.data.instant.details.air_temperature);
   const temps = day.length ? day : hours.map((h) => h.temp);
-  return { temp: hours[0].temp, feels: null, kind: hours[0].kind, min: Math.min(...temps), max: Math.max(...temps), hours, src: 'MET Norway' };
+  const byDay = {}; // 날짜별로 모아 최저·최고, 한낮 날씨, 비 여부
+  for (const x of ts) { const d = ymd(new Date(x.time)); (byDay[d] ||= []).push(x); }
+  const days = Object.entries(byDay).slice(0, 7).map(([d, xs]) => {
+    const tt = xs.map((x) => x.data.instant.details.air_temperature);
+    const noon = xs.reduce((a, x) => Math.abs(new Date(x.time).getHours() - 12) < Math.abs(new Date(a.time).getHours() - 12) ? x : a);
+    const nx = noon.data.next_6_hours || noon.data.next_12_hours || noon.data.next_1_hours;
+    const rain = xs.some((x) => (x.data.next_6_hours?.details.precipitation_amount ?? x.data.next_1_hours?.details.precipitation_amount ?? 0) > 0.5);
+    return { d, kind: metKind(nx?.summary.symbol_code), min: Math.min(...tt), max: Math.max(...tt), pop: rain ? 70 : 0 };
+  });
+  return { temp: hours[0].temp, feels: null, kind: hours[0].kind, min: Math.min(...temps), max: Math.max(...temps), hours, days, src: 'MET Norway' };
 }
 async function fromAir(p) {
   const j = await getJSON(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${p.lat}&longitude=${p.lon}&current=pm10,pm2_5`);
@@ -691,7 +704,7 @@ function renderWx() {
   const g10 = grade(AQ?.pm10, [30, 80, 150]), g25 = grade(AQ?.pm25, [15, 35, 75]), lv = Math.max(g10, g25);
   el.innerHTML = `<div class="wrow"><span class="wnow">${icon(WX.kind, new Date().getHours())} ${deg(WX.temp)}</span>
       <span class="wmm">↓${deg(WX.min)} ↑${deg(WX.max)}${WX.feels != null ? `<br><small>${t('feels')} ${deg(WX.feels)}</small>` : ''}</span>
-      <div class="whours">${WX.hours.slice(1, 9).map((h) => `<span class="wh">${t('hourFmt')(h.h)}<i>${icon(h.kind, h.h)}</i>${deg(h.temp)}${h.pop >= 30 ? `<small>💧${h.pop}%</small>` : ''}</span>`).join('')}</div></div>
+      <div class="whours">${WX.days.map((d) => `<span class="wh ${d.d === today() ? 'now' : ''}">${new Date(d.d + 'T12:00').toLocaleDateString(t('locale'), { weekday: 'short' })}<i>${WX_ICON[d.kind]}</i><span>${deg(d.max)}<em>${deg(d.min)}</em></span>${d.pop >= 30 ? `<small>💧${d.pop}%</small>` : ''}</span>`).join('')}</div></div>
     <div class="wrow">${lv >= 0 ? `<span class="dust" style="--c:${DUST_COL[lv]}">${t('dust10')} ${t('dustLv')[g10] ?? '-'} · ${t('dust25')} ${t('dustLv')[g25] ?? '-'}</span>` : ''}
       <span class="tip" title="${t('wxFrom')} ${WX.src}">${outfit(WX, lv)}</span></div>`;
   fitAll(); // 날씨가 들어오면 위 칸 높이가 바뀜
