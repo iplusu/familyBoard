@@ -145,6 +145,11 @@
   .side .card h2 .add { width: 2.3rem; height: 2.3rem; font-size: 1.25rem; }
   .side .card h2 .hist { padding: .2rem .5rem; }
   .side ul { gap: .35rem; }
+  #events { display: flex; flex-direction: column; gap: .5rem; min-height: 0; flex: 1; }
+  .eg { display: flex; flex-direction: column; min-height: 0; flex: 0 1 auto; }
+  .eg h3 { margin: 0 0 .25rem; font-size: 1rem; color: var(--c); border-bottom: 3px solid var(--c); padding-bottom: .1rem; flex: none; }
+  .eg ul { overflow-y: auto; min-height: 3.3rem; overscroll-behavior: contain; }
+  .eg ul.more-below { -webkit-mask-image: linear-gradient(#000 calc(100% - 2rem), transparent); mask-image: linear-gradient(#000 calc(100% - 2rem), transparent); }
   .side li.ev { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .1rem .5rem; }
   .side li.ev .when { grid-column: 1 / -1; grid-row: 1; }
   .side li.ev .etitle, .side li.ev .who { grid-row: 2; }
@@ -178,7 +183,8 @@
     .task { flex: none; }
     .mailgrid { grid-template-columns: 1fr !important; }
     .card, .agenda { overflow: visible; }
-    .agenda, .todo { flex: none; }
+    .agenda, .todo, .eg { flex: none; }
+    .eg ul { overflow: visible; -webkit-mask-image: none; mask-image: none; }
     .todo { overflow: visible; -webkit-mask-image: none; mask-image: none; }
     header { grid-template-columns: minmax(0, 1fr); grid-template-areas: "right" "when" "wx"; }
     header .right { justify-self: stretch; flex-wrap: wrap; white-space: normal; }
@@ -262,7 +268,7 @@
   <main>
     <div id="kids"></div>
     <div class="side">
-      <section class="card"><h2><span data-i="events"></span><button class="ghost hist" data-calopen>🗓</button><button class="add" data-open="eventDlg">＋</button></h2><ul id="events"></ul></section>
+      <section class="card"><h2><span data-i="events"></span><button class="ghost hist" data-calopen>🗓</button><button class="add" data-open="eventDlg">＋</button></h2><div id="events"></div></section>
     </div>
   </main>
 </div>
@@ -536,16 +542,20 @@ function render() {
 
   if ($('#notes')) $('#notes').innerHTML = activeNotes().sort((a, b) => a.end.localeCompare(b.end)).map((n) => noteRow(n, td)).join('') || `<p class="empty">${t('noNotes')}</p>`;
 
+  // 다가오는 일정: 아이별로 나누고, 아이가 정해지지 않은 일정은 '가족'에. 칸마다 길면 손가락으로 스크롤
   const ev = [...S.events, ...extEvents().map((e) => ({ ...e, ext: true }))].filter((e) => e.date >= td)
-    .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 10);
-  $('#events').innerHTML = ev.map((e) => `<li class="ev ${e.date === td ? 'today' : ''}">
-    <span class="when">${dayLabel(e.date)} ${e.time}</span>
-    <span class="etitle">${esc(e.title)}</span>${e.ext && !e.who ? '<span class="who">🔗</span>' : `<span class="who" style="--c:${kidColor(e.who) || '#8a7a6a'}">${esc(e.who)}</span>`}</li>`).join('') || `<p class="empty">${t('noEvents')}</p>`;
+    .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  const kidOfEv = (e) => S.kids.find((k) => e.kid === k.id || e.who === k.name);
+  const evGroup = (head, c, list) => `<section class="eg" style="--c:${c}"><h3>${head}</h3><ul>${list.slice(0, 20).map((e) => `<li class="ev ${e.date === td ? 'today' : ''}">
+    <span class="when">${dayLabel(e.date)} ${e.time}</span><span class="etitle">${esc(e.title)}</span></li>`).join('') || `<p class="empty">${t('noEvents')}</p>`}</ul></section>`;
+  const rest = ev.filter((e) => !kidOfEv(e));
+  $('#events').innerHTML = S.kids.map((k) => evGroup(`${esc(k.emoji)} ${esc(k.name)}`, k.color, ev.filter((e) => kidOfEv(e) === k))).join('')
+    + (rest.length ? evGroup(`👨‍👩‍👧 ${t('family')}`, '#8a7a6a', rest) : '');
 
   fitAll();
   keepScroll(scrolled);
 }
-const fitAll = () => { for (const id of ['notes', 'events']) if ($('#' + id)) fitList($('#' + id)); fitAgendas(); };
+const fitAll = () => { for (const id of ['notes']) if ($('#' + id)) fitList($('#' + id)); fitAgendas(); document.querySelectorAll('#events .eg ul').forEach(scrollHint); };
 // 태블릿 한 화면: 카드에 안 들어가는 줄은 숨기고 "+N개 더"를 누르면 전체 목록
 // box가 넘치면 list의 뒤쪽 항목부터 숨기고 "+N개 더" 버튼을 붙임
 function fitBox(box, list, items, button) {
@@ -577,7 +587,7 @@ function fitCard(card) {
   if (todo) scrollHint(todo);
 }
 const scrollHint = (el) => el.classList.toggle('more-below', el.scrollTop + el.clientHeight < el.scrollHeight - 2);
-document.addEventListener('scroll', (e) => e.target.classList?.contains('todo') && scrollHint(e.target), true);
+document.addEventListener('scroll', (e) => (e.target.classList?.contains('todo') || e.target.matches?.('#events ul')) && scrollHint(e.target), true);
 const fitAgendas = () => document.querySelectorAll('#kids .kid').forEach(fitCard);
 const keepScroll = (scrolled) => document.querySelectorAll('#kids .todo').forEach((e) => { e.scrollTop = scrolled[e.closest('.kid').dataset.kid] || 0; scrollHint(e); });
 function openList(id) {
