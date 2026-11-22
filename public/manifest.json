@@ -1,0 +1,8 @@
+{
+  "name": "Family Board",
+  "short_name": "Family",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff6ea",
+  "theme_color": "#fff6ea"
+}

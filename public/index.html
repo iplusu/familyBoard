@@ -4,28 +4,36 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#fff6ea">
+<link rel="manifest" href="/manifest.json">
 <title>Our Family Board</title>
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; height: 100dvh; display: flex; flex-direction: column; background: #fff6ea; color: #2b2622;
     font-family: system-ui, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif; -webkit-tap-highlight-color: transparent; }
-  button, input, select { font: inherit; }
+  button, input, select, textarea { font: inherit; }
   button { cursor: pointer; border: 0; border-radius: 16px; padding: .6rem 1.1rem; background: #2b2622; color: #fff; font-weight: 700; }
   button.ghost { background: #f1e6d8; color: #2b2622; }
-  input, select { padding: .7rem .9rem; border: 2px solid #e2d4c2; border-radius: 14px; background: #fff; min-width: 0; }
+  input, select, textarea { padding: .7rem .9rem; border: 2px solid #e2d4c2; border-radius: 14px; background: #fff; min-width: 0; }
+  textarea { min-height: 5rem; resize: vertical; }
   [hidden] { display: none !important; }
 
   header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 1.2rem; padding: .6rem 1.4rem .4rem; }
   #clock { white-space: nowrap; font-size: clamp(2.4rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -.02em; }
   #date { font-size: clamp(1.2rem, 2.4vw, 1.8rem); font-weight: 600; color: #7a6b5d; }
-  header .right { margin-left: auto; display: flex; gap: .6rem; align-items: center; color: #9a8b7d; }
+  header .right { margin-left: auto; display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; color: #9a8b7d; }
+  #openMail { font-size: 1.2rem; }
+  .badge { display: inline-block; min-width: 1.6em; margin-left: .4em; padding: 0 .45em; border-radius: 99px; background: #e74c3c; color: #fff; font-size: .85em; text-align: center; }
 
-  main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr 1.15fr; gap: 1rem; padding: 0 1rem 1rem; }
+  main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr 1.25fr; gap: 1rem; padding: 0 1rem 1rem; }
   #kids { display: contents; }
-  .side { display: grid; grid-template-rows: 1.2fr 1fr; gap: 1rem; min-height: 0; }
+  .side { display: grid; grid-template-rows: 1.5fr 1fr .8fr; gap: 1rem; min-height: 0; }
   .card { background: #fff; border-radius: 26px; padding: 1rem 1.1rem; box-shadow: 0 2px 10px #0000000d; display: flex; flex-direction: column; min-height: 0; overflow: auto; }
-  .card h2 { margin: 0 0 .5rem; font-size: clamp(1.4rem, 2.8vw, 2rem); display: flex; align-items: center; gap: .5rem; }
-  .card h2 .add { margin-left: auto; font-size: 1.6rem; width: 3.2rem; height: 3.2rem; padding: 0; border-radius: 50%; }
+  .card h2 { margin: 0 0 .5rem; font-size: clamp(1.3rem, 2.6vw, 1.9rem); display: flex; align-items: center; gap: .5rem; }
+  .card h2 .add { margin-left: auto; font-size: 1.6rem; width: 3rem; height: 3rem; padding: 0; border-radius: 50%; flex: none; }
+  .card h2 .hist { margin-left: auto; padding: .4rem .7rem; }
+  .card h2 .hist ~ .add { margin-left: 0; }
+  .parentOnly { display: none !important; }
+  body.parent .parentOnly { display: inline-block !important; }
 
   .kid { border-top: 10px solid var(--c); }
   .kid .emoji { font-size: 1.4em; }
@@ -36,15 +44,32 @@
   .task.done { background: color-mix(in srgb, var(--c) 28%, #fff); }
   .task.done span { text-decoration: line-through; opacity: .6; }
   .cheer { text-align: center; font-size: 1.6rem; font-weight: 800; margin-top: .6rem; }
-  .empty { color: #a99a8b; font-size: 1.2rem; }
+  .empty { color: #a99a8b; font-size: 1.2rem; margin: .3rem 0; }
 
   ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
-  li { display: flex; align-items: center; gap: .7rem; font-size: clamp(1.1rem, 2vw, 1.4rem); padding: .55rem .8rem; border-radius: 16px; background: #faf4ec; }
+  li { display: flex; align-items: center; gap: .7rem; font-size: clamp(1.05rem, 1.9vw, 1.35rem); padding: .55rem .8rem; border-radius: 16px; background: #faf4ec; }
   li.today { background: #ffe9c7; }
   li .when { font-weight: 800; white-space: nowrap; }
   li .who { margin-left: auto; white-space: nowrap; font-size: .85em; padding: .1rem .6rem; border-radius: 99px; color: #fff; background: var(--c, #8a7a6a); }
   li .x, .x { display: none; background: none; color: #c0392b; padding: .2rem .5rem; font-size: 1.3rem; }
   body.parent li .x, .settings .x { display: inline-block; }
+
+  /* 얼굴 버튼 (게시판·우체통) */
+  .face { position: relative; width: 3rem; height: 3rem; padding: 0; border-radius: 50%; font-size: 1.6rem; line-height: 1; background: #fff; color: #2b2622; border: 3px solid var(--c, #8a7a6a); flex: none; }
+  .face.done { background: color-mix(in srgb, var(--c) 30%, #fff); }
+  .face.done::after { content: '✓'; position: absolute; right: -6px; bottom: -6px; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: #2e9e5b; color: #fff; font-size: .85rem; line-height: 1.3rem; }
+  .face .dot { position: absolute; top: -3px; right: -3px; width: .85rem; height: .85rem; border-radius: 50%; background: #e74c3c; }
+  .face.big { width: auto; height: auto; min-width: 9rem; padding: 1rem 1.4rem; border-radius: 24px; display: flex; flex-direction: column; align-items: center; gap: .3rem; font-size: 3.2rem; }
+  .face.big b { font-size: 1.4rem; }
+  .face.big .badge { position: absolute; top: -.5rem; right: -.5rem; font-size: 1.1rem; }
+  .faces { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+
+  li.note { display: grid; grid-template-columns: 1fr auto auto; gap: .6rem; }
+  li.note .ntext { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nmeta { font-size: .8em; color: #7a6b5d; }
+  li.note.over .nmeta { color: #c0392b; font-weight: 700; }
+  li.note.future { opacity: .55; }
+  .nfaces { display: flex; gap: .45rem; }
 
   /* 폰·세로 화면: 한 줄로 쌓고 스크롤 */
   @media (max-width: 820px), (orientation: portrait) {
@@ -52,6 +77,7 @@
     main { grid-template-columns: 1fr; }
     .side { grid-template-rows: auto; }
     .task { flex: none; }
+    .mailgrid { grid-template-columns: 1fr !important; }
   }
 
   #gate { flex: 1; display: grid; place-items: center; padding: 1rem; }
@@ -62,15 +88,42 @@
   .roles label:has(input:checked) { border-color: #2b2622; background: #f1e6d8; }
   .roles input { display: none; }
 
-  dialog { border: 0; border-radius: 24px; padding: 1.2rem; width: min(560px, 94vw); box-shadow: 0 10px 40px #0004; }
+  dialog { border: 0; border-radius: 24px; padding: 1.2rem; width: min(560px, 94vw); max-height: 92dvh; box-shadow: 0 10px 40px #0004; }
+  dialog.wide { width: min(1000px, 96vw); }
   dialog::backdrop { background: #0006; }
   dialog form, .col { display: flex; flex-direction: column; gap: .7rem; }
   dialog h3 { margin: 0; font-size: 1.5rem; }
-  .row { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
-  .row > input:not([type=color]) { flex: 1; }
+  .row, dialog form.row { display: flex; flex-direction: row; gap: .5rem; align-items: center; flex-wrap: wrap; }
+  .row > input:not([type=color]), .row > label { flex: 1; }
   .settings section { border: 2px solid #f1e6d8; border-radius: 18px; padding: .8rem; }
   .settings h4 { margin: 0 0 .5rem; font-size: 1.2rem; }
   input[type=color] { width: 3.2rem; height: 3rem; padding: .2rem; }
+
+  /* 우체통 */
+  .mailgrid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1rem; }
+  .chips, .phrases { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .chip { background: #fff; color: #2b2622; border: 3px solid #e2d4c2; padding: .5rem .9rem; border-radius: 16px; font-weight: 700; font-size: 1.1rem; }
+  .chip.on, .chip:has(input:checked) { border-color: var(--c, #2b2622); background: color-mix(in srgb, var(--c, #2b2622) 22%, #fff); }
+  .chip input { display: none; }
+  .phrase { font-size: 1.2rem; padding: .8rem 1rem; }
+  .maillist { max-height: 62dvh; overflow: auto; }
+  li.mail { display: block; }
+  li.mail.unread { background: #ffe9c7; }
+  .mhead { font-size: .8em; color: #7a6b5d; display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
+  .mtext { font-size: 1.3rem; font-weight: 700; margin: .2rem 0; overflow-wrap: anywhere; }
+  .re { font-size: .8em; color: #9a8b7d; border-left: 3px solid #e2d4c2; padding-left: .5rem; }
+  .reads { font-size: .8em; color: #2e9e5b; }
+  .quick { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .4rem; }
+  .quick button { padding: .45rem .75rem; font-size: 1rem; }
+
+  /* 게시판 상세·알람 */
+  .notebig { font-size: 1.8rem; font-weight: 700; white-space: pre-wrap; overflow-wrap: anywhere; padding: 1rem; background: #faf4ec; border-radius: 18px; }
+  .bigdone { font-size: 1.8rem; padding: 1.1rem; background: var(--c); text-shadow: 0 1px 2px #0005; }
+  .bigdone.ghost { background: #f1e6d8; text-shadow: none; }
+  #alarm { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: #000b; padding: 1rem; }
+  #alarm .box { background: #fff; border-radius: 30px; padding: 2rem; text-align: center; width: min(640px, 100%); }
+  #alarm .ring { font-size: 5rem; animation: shake .4s infinite; }
+  @keyframes shake { 50% { transform: rotate(14deg); } }
 </style>
 </head>
 <body>
@@ -92,11 +145,17 @@
 <div id="board" hidden style="display:contents">
   <header>
     <div id="clock"></div><div id="date"></div>
-    <div class="right"><span id="devName"></span><button class="ghost" data-lang></button><button class="ghost" id="openSettings" data-i="settings" hidden></button></div>
+    <div class="right">
+      <span id="mePick"></span><span id="devName"></span>
+      <button class="ghost" data-lang></button>
+      <button id="openMail"><span data-i="mailbox"></span><b class="badge" id="mailBadge" hidden></b></button>
+      <button class="ghost" id="openSettings" data-i="settings" hidden></button>
+    </div>
   </header>
   <main>
     <div id="kids"></div>
     <div class="side">
+      <section class="card"><h2><span data-i="boardTitle"></span><button class="ghost hist" data-hist>📜</button><button class="add parentOnly" data-open="noteAddDlg">＋</button></h2><ul id="notes"></ul></section>
       <section class="card"><h2><span data-i="events"></span> <button class="add" data-open="eventDlg">＋</button></h2><ul id="events"></ul></section>
       <section class="card"><h2><span data-i="memos"></span> <button class="add" data-open="memoDlg">＋</button></h2><ul id="memos"></ul></section>
     </div>
@@ -118,28 +177,73 @@
   <div class="row"><button data-i="post"></button><button type="button" class="ghost" data-close data-i="cancel"></button></div>
 </form></dialog>
 
+<dialog id="noteAddDlg"><form data-addnote>
+  <h3 data-i="addNote"></h3>
+  <textarea name="text" maxlength="200" data-ip="notePh" required></textarea>
+  <div class="chips" id="noteKids"></div>
+  <div class="row">
+    <label class="col"><span data-i="startDate"></span><input name="start" type="date" required></label>
+    <label class="col"><span data-i="endDate"></span><input name="end" type="date" required></label>
+  </div>
+  <label class="col"><span data-i="alarmTime"></span><input name="alarm" type="time"></label>
+  <div class="row"><button data-i="post"></button><button type="button" class="ghost" data-close data-i="cancel"></button></div>
+</form></dialog>
+
+<dialog id="noteDlg"><div class="col" id="noteBody"></div></dialog>
+
+<dialog id="histDlg" class="wide"><div class="col">
+  <div class="row"><h3 data-i="history"></h3><button type="button" class="ghost" data-close style="margin-left:auto" data-i="close"></button></div>
+  <ul id="histList"></ul>
+</div></dialog>
+
+<dialog id="mailDlg" class="wide"><div class="col">
+  <div class="row"><h3 data-i="mailbox"></h3><span id="mailTop" class="row"></span><button type="button" class="ghost" data-close style="margin-left:auto" data-i="close"></button></div>
+  <div id="mailBody" class="col"></div>
+</div></dialog>
+
 <dialog id="settingsDlg"><div class="col settings">
   <div class="row"><h3 data-i="settingsTitle"></h3><button type="button" class="ghost" data-close style="margin-left:auto" data-i="close"></button></div>
   <div id="settingsBody" class="col"></div>
 </div></dialog>
+
+<div id="alarm" hidden><div class="box col">
+  <div class="ring">⏰</div>
+  <div class="notebig" id="alarmText"></div>
+  <div class="faces" id="alarmFaces"></div>
+  <button data-alarmok data-i="alarmOk"></button>
+</div></div>
 
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const today = () => ymd(new Date());
-let S = null, day = today(), poll = null;
+const addDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return ymd(d); };
+let S = null, day = today(), poll = null, lastVer;
+
 // ---------- 언어 (기기마다 따로 기억) ----------
 const L = {
   ko: { locale: 'ko-KR', other: 'English', title: '🏠 우리 가족 보드', namePh: '이 기기 이름 (예: 거실 태블릿, 엄마 폰)', pinPh: '부모 PIN (숫자 4~8자리)',
     roleFamily: '👨‍👩‍👧‍👦 가족 화면', roleParent: '🔑 부모 기기', start: '시작하기', settings: '⚙️ 설정', events: '📅 다가오는 일정', memos: '💬 메모',
-    addEvent: '📅 일정 추가', eventPh: '무엇을? (예: 태권도)', add: '추가', cancel: '취소', addMemo: '💬 메모 남기기', memoPh: '하고 싶은 말', post: '남기기',
+    addEvent: '📅 일정 추가', eventPh: '무엇을? (예: 태권도)', add: '추가', cancel: '취소', addMemo: '💬 메모 남기기', memoPh: '하고 싶은 말', post: '붙이기',
     settingsTitle: '⚙️ 설정 (부모)', close: '닫기', setupMsg: '처음 오셨네요! 부모 PIN을 만들어 주세요. 이 기기는 부모 기기로 등록돼요.',
     registerMsg: '이 기기를 등록하려면 부모 PIN을 입력하세요.', today: '오늘', tomorrow: '내일', noTasks: '오늘 할 일이 없어요', cheer: '🎉 다 했어요! 최고!',
     noEvents: '일정이 없어요', noMemos: '메모가 없어요', save: '저장', taskPh: '매일 할 일 추가 (최대 8개)', devices: '📱 등록된 기기', thisDevice: '(이 기기)',
     unregister: '해제', confirmDel: '삭제할까요?', confirmTask: '이 할 일을 지울까요?', confirmDev: '이 기기의 등록을 해제할까요?', mom: '엄마', dad: '아빠', family: '가족',
+    pinTitle: '🔒 PIN 변경', curPin: '지금 PIN', newPin: '새 PIN (숫자 4~8자리)', pinChanged: 'PIN을 바꿨어요. 이미 등록된 기기는 그대로 쓸 수 있어요.',
+    mailbox: '📮 우체통', whoSends: '누가 보내요?', whoAreYou: '이 폰은 누구 거예요?', back: '← 뒤로', to: '받는 사람', all: '모두', writePh: '직접 쓰기',
+    send: '보내기', pickTo: '받는 사람을 골라 주세요', noMail: '쪽지가 없어요', read: '읽음', sent: '보냈어요!',
+    kidPhrases: ['🍚 배고파요', '✅ 숙제 다 했어요', '📞 전화해 주세요', '🤗 보고 싶어요', '❤️ 사랑해요', '🏠 언제 와요?'],
+    parentPhrases: ['❤️ 사랑해', '👍 알았어', '🏃 곧 갈게', '👏 잘했어', '⏳ 조금만 기다려'],
+    notifOn: '🔔 알림 켜짐', notifTurnOn: '🔔 알림 켜기', notifReady: '이제 이 폰으로 쪽지 알림이 와요.',
+    notifDenied: '브라우저에서 알림이 차단돼 있어요. 브라우저 설정에서 이 사이트 알림을 허용해 주세요.',
+    notifUnsupported: '이 브라우저에서는 알림을 받을 수 없어요. 아이폰은 공유 → 홈 화면에 추가 후, 홈 화면 아이콘으로 열어서 다시 눌러 주세요.',
+    boardTitle: '📌 해야 할 일', noNotes: '붙은 쪽지가 없어요', addNote: '📌 쪽지 붙이기', notePh: '무엇을 해야 하나요?', startDate: '시작일', endDate: '마감일',
+    alarmTime: '⏰ 매일 알람 시각 (선택)', due: '마감', overdue: '마감 지남', from: '보낸 사람', didIt: '✅ 했어요!', undoDone: '↩ 아직 안 했어요',
+    history: '📜 끝낸 쪽지', noHistory: '아직 기록이 없어요', alarmOk: '확인', doneAt: '완료',
     e_already_setup: '이미 설정됐어요', e_setup_first: '먼저 설정하세요', e_locked: 'PIN을 여러 번 틀렸어요. 5분 후 다시 시도하세요', e_wrong_pin: 'PIN이 틀렸어요',
-    e_parent_only: '부모만 할 수 있어요', e_conflict: '동시에 바뀌었어요. 다시 해 주세요', e_bad_request: '입력을 확인해 주세요', e_no_db: '서버에 Firebase가 연결되지 않았어요', e_server_error: '오류가 났어요' },
+    e_parent_only: '부모만 할 수 있어요', e_conflict: '동시에 바뀌었어요. 다시 해 주세요', e_bad_request: '입력을 확인해 주세요', e_no_db: '서버에 Firebase가 연결되지 않았어요',
+    e_need_member: '먼저 위에서 이 폰이 누구 건지 골라 주세요', e_server_error: '오류가 났어요' },
   en: { locale: 'en-US', other: '한국어', title: '🏠 Our Family Board', namePh: "Device name (e.g. Living room tablet, Mom's phone)", pinPh: 'Parent PIN (4–8 digits)',
     roleFamily: '👨‍👩‍👧‍👦 Family screen', roleParent: '🔑 Parent device', start: 'Start', settings: '⚙️ Settings', events: '📅 Upcoming', memos: '💬 Notes',
     addEvent: '📅 Add event', eventPh: 'What? (e.g. Soccer practice)', add: 'Add', cancel: 'Cancel', addMemo: '💬 Leave a note', memoPh: 'Your message', post: 'Post',
@@ -147,8 +251,20 @@ const L = {
     registerMsg: 'Enter the parent PIN to register this device.', today: 'Today', tomorrow: 'Tomorrow', noTasks: 'Nothing to do today', cheer: '🎉 All done! Great job!',
     noEvents: 'No events', noMemos: 'No notes', save: 'Save', taskPh: 'Add a daily task (max 8)', devices: '📱 Registered devices', thisDevice: '(this device)',
     unregister: 'Remove', confirmDel: 'Delete this?', confirmTask: 'Delete this task?', confirmDev: 'Remove this device?', mom: 'Mom', dad: 'Dad', family: 'Family',
+    pinTitle: '🔒 Change PIN', curPin: 'Current PIN', newPin: 'New PIN (4–8 digits)', pinChanged: 'PIN changed. Devices already registered keep working.',
+    mailbox: '📮 Mailbox', whoSends: "Who's sending?", whoAreYou: 'Whose phone is this?', back: '← Back', to: 'To', all: 'Everyone', writePh: 'Write your own',
+    send: 'Send', pickTo: 'Pick who to send to', noMail: 'No messages', read: 'read', sent: 'Sent!',
+    kidPhrases: ["🍚 I'm hungry", '✅ Homework done!', '📞 Please call me', '🤗 I miss you', '❤️ I love you', '🏠 When are you coming home?'],
+    parentPhrases: ['❤️ Love you', '👍 OK', '🏃 On my way', '👏 Great job', '⏳ Wait a little'],
+    notifOn: '🔔 Notifications on', notifTurnOn: '🔔 Turn on notifications', notifReady: "This phone will now get message notifications.",
+    notifDenied: 'Notifications are blocked. Allow notifications for this site in your browser settings.',
+    notifUnsupported: "This browser can't receive notifications. On iPhone: Share → Add to Home Screen, open it from the home screen, then tap again.",
+    boardTitle: '📌 To-do board', noNotes: 'No notes posted', addNote: '📌 Post a note', notePh: 'What needs to be done?', startDate: 'Start', endDate: 'Due',
+    alarmTime: '⏰ Daily alarm time (optional)', due: 'Due', overdue: 'Overdue', from: 'From', didIt: '✅ Done!', undoDone: '↩ Not done yet',
+    history: '📜 Finished notes', noHistory: 'No history yet', alarmOk: 'OK', doneAt: 'Done',
     e_already_setup: 'Already set up', e_setup_first: 'Set up first', e_locked: 'Too many wrong PINs. Try again in 5 minutes', e_wrong_pin: 'Wrong PIN',
-    e_parent_only: 'Parents only', e_conflict: 'Changed at the same time. Please try again', e_bad_request: 'Please check your input', e_no_db: 'Firebase is not connected on the server', e_server_error: 'Something went wrong' },
+    e_parent_only: 'Parents only', e_conflict: 'Changed at the same time. Please try again', e_bad_request: 'Please check your input', e_no_db: 'Firebase is not connected on the server',
+    e_need_member: 'First choose whose phone this is (top of the screen)', e_server_error: 'Something went wrong' },
 };
 let lang = 'en'; // 기본 영어, 기기에서 바꾸면 그 기기에 기억
 try { lang = localStorage.getItem('lang') || 'en'; } catch {}
@@ -160,10 +276,10 @@ function applyLang() {
   document.querySelectorAll('[data-ip]').forEach((el) => el.placeholder = t(el.dataset.ip));
   document.querySelectorAll('[data-lang]').forEach((el) => el.textContent = '🌐 ' + t('other'));
   tick();
-  if (S) { render(); if ($('#settingsDlg').open) renderSettings(); }
+  if (S) refresh();
 }
 
-const POLL_MS = 10000; // 다른 기기 변경을 확인하는 간격 (짧을수록 빠르지만 데이터 사용량↑)
+const POLL_MS = 10000; // 다른 기기 변경을 확인하는 간격 (작은 버전 값만 확인하고, 바뀌었을 때만 전체를 받음)
 
 async function api(url, data) {
   const r = await fetch(url, data ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) } : {});
@@ -172,7 +288,11 @@ async function api(url, data) {
   if (!r.ok) { if (data) alert(L[lang]['e_' + j.error] || t('e_server_error')); throw new Error(j.error); } // 자동 새로고침 실패는 조용히
   return j;
 }
-const act = (type, data) => api('/api?r=action', { type, ...data }).then(load);
+const act = (type, data) => api('/api?r=action', { type, ...data }).then(checkVer);
+async function checkVer() { // 바뀐 게 있을 때만 전체를 다시 받음
+  const { v } = await (await fetch('/api?r=ver')).json();
+  if (v !== lastVer || v == null) { await load(); lastVer = v; }
+}
 
 // ---------- 시작: 등록 확인 ----------
 let gateMode;
@@ -194,31 +314,61 @@ $('#gateForm').onsubmit = async (e) => {
   boot();
 };
 
-function start() {
+async function start() {
   $('#gate').hidden = true; $('#board').hidden = false;
   clearInterval(poll);
-  poll = setInterval(() => { if (!document.hidden) load().catch(() => {}); }, POLL_MS); // 다른 기기 변경 반영
-  load();
+  poll = setInterval(() => { if (!document.hidden) checkVer().catch(() => {}); }, POLL_MS);
+  lastVer = undefined;
+  await checkVer();
   navigator.wakeLock?.request('screen').catch(() => {});
+  if (location.search.includes('mail=1')) { history.replaceState(null, '', '/'); openMail(); } // 알림을 눌러서 열었을 때
 }
-async function load() { S = await api('/api?r=state'); render(); }
+let prevCount = null;
+async function load() {
+  S = await api('/api?r=state');
+  refresh();
+  const n = myUnread() + unseenNotes(); // 새 쪽지가 오면 딩동
+  if (prevCount != null && n > prevCount) beep(2, 660);
+  prevCount = n;
+}
+function refresh() { // 열려 있는 화면을 모두 새 데이터로
+  render();
+  if ($('#settingsDlg').open) renderSettings();
+  if ($('#mailDlg').open) renderMail(true);
+  if ($('#noteDlg').open) renderNote();
+  if ($('#histDlg').open) renderHist();
+}
 
-// ---------- 그리기 ----------
+// ---------- 사람 ----------
+const PARENTS = ['mom', 'dad'];
+const kidOf = (m) => S.kids.find((k) => k.id === m);
+const memberName = (m) => PARENTS.includes(m) ? t(m) : kidOf(m)?.name ?? '?';
+const memberFace = (m) => m === 'mom' ? '👩' : m === 'dad' ? '👨' : esc(kidOf(m)?.emoji ?? '❓');
+const memberColor = (m) => kidOf(m)?.color || '#8a7a6a';
+const isParent = () => S.me.role === 'parent';
+const unreadFor = (m) => S.mail.filter((x) => x.to.includes(m) && !x.readBy.includes(m)).length;
+const myUnread = () => isParent() ? (S.me.member ? unreadFor(S.me.member) : 0) : S.kids.reduce((n, k) => n + unreadFor(k.id), 0);
+const activeNotes = () => S.board.filter((n) => !n.doneAt);
+const unseenNotes = () => isParent() ? 0 : activeNotes().filter((n) => n.start <= today()).reduce((c, n) => c + n.to.filter((k) => !n.seenBy[k] && !n.doneBy[k]).length, 0);
+const md = (d) => new Date(d + 'T00:00').toLocaleDateString(t('locale'), { month: 'numeric', day: 'numeric' });
 const kidColor = (name) => S.kids.find((k) => k.name === name)?.color;
 const whoList = () => [t('mom'), t('dad'), ...S.kids.map((k) => k.name), t('family')];
 function dayLabel(d) {
-  const n = new Date(); const tm = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1);
   if (d === today()) return t('today');
-  if (d === ymd(tm)) return t('tomorrow');
-  const x = new Date(d + 'T00:00');
-  return x.toLocaleDateString(t('locale'), { month: 'numeric', day: 'numeric', weekday: 'short' });
+  if (d === addDays(1)) return t('tomorrow');
+  return new Date(d + 'T00:00').toLocaleDateString(t('locale'), { month: 'numeric', day: 'numeric', weekday: 'short' });
 }
 
+// ---------- 홈 화면 ----------
 function render() {
-  const td = today(), parent = S.me.role === 'parent';
+  const td = today(), parent = isParent();
   document.body.classList.toggle('parent', parent);
   $('#openSettings').hidden = !parent;
   $('#devName').textContent = S.me.name;
+  $('#mePick').innerHTML = parent && !S.me.member
+    ? `${t('whoAreYou')} ${PARENTS.map((m) => `<button class="ghost" data-setme="${m}">${memberFace(m)} ${t(m)}</button>`).join(' ')}` : '';
+  const unread = myUnread();
+  $('#mailBadge').hidden = !unread; $('#mailBadge').textContent = unread;
 
   $('#kids').innerHTML = S.kids.map((k) => {
     const done = k.tasks.filter((x) => x.doneOn === td).length;
@@ -229,6 +379,8 @@ function render() {
       ${k.tasks.length && done === k.tasks.length ? `<div class="cheer">${t('cheer')}</div>` : ''}
     </section>`;
   }).join('');
+
+  $('#notes').innerHTML = activeNotes().sort((a, b) => a.end.localeCompare(b.end)).map((n) => noteRow(n, td)).join('') || `<p class="empty">${t('noNotes')}</p>`;
 
   const ev = S.events.filter((e) => e.date >= td).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 10);
   $('#events').innerHTML = ev.map((e) => `<li class="${e.date === td ? 'today' : ''}">
@@ -241,6 +393,153 @@ function render() {
     <button class="x" data-del="delMemo:${m.id}">✕</button></li>`).join('') || `<p class="empty">${t('noMemos')}</p>`;
 }
 
+// ---------- 게시판 ----------
+const faceBtn = (n, k) => {
+  const kid = kidOf(k); if (!kid) return '';
+  const dot = !n.seenBy[k] && !n.doneBy[k] ? '<i class="dot"></i>' : '';
+  return `<button class="face ${n.doneBy[k] ? 'done' : ''}" style="--c:${kid.color}" data-note="${n.id}:${k}" title="${esc(kid.name)}">${esc(kid.emoji)}${dot}</button>`;
+};
+function noteRow(n, td) {
+  const future = n.start > td, over = !n.doneAt && n.end < td;
+  const meta = n.doneAt ? `${t('doneAt')} ${md(ymd(new Date(n.doneAt)))} · ${t('from')} ${esc(memberName(n.from))}`
+    : `${future ? md(n.start) + ' ~ ' : ''}${t('due')} ${md(n.end)}${over ? ' · ' + t('overdue') : ''}${n.alarm ? ' · ⏰ ' + n.alarm : ''}`;
+  return `<li class="note ${future ? 'future' : ''} ${over ? 'over' : ''}">
+    <div style="min-width:0"><div class="ntext">${esc(n.text)}</div><div class="nmeta">${meta}</div></div>
+    <div class="nfaces">${n.to.map((k) => faceBtn(n, k)).join('')}</div>
+    <button class="x" data-del="delNote:${n.id}">✕</button></li>`;
+}
+let noteOpen = null;
+function openNote(id, kid) {
+  noteOpen = { id, kid };
+  renderNote(); $('#noteDlg').open || $('#noteDlg').showModal();
+  const n = S.board.find((x) => x.id === id);
+  if (n && !n.seenBy[kid]) act('seeNote', { id, kid }).catch(() => {});
+}
+function renderNote() {
+  const n = S.board.find((x) => x.id === noteOpen?.id), k = n && kidOf(noteOpen.kid);
+  if (!k) return $('#noteDlg').close();
+  const done = !!n.doneBy[k.id];
+  $('#noteBody').innerHTML = `<h3>${esc(k.emoji)} ${esc(k.name)}</h3>
+    <div class="notebig">${esc(n.text)}</div>
+    <div class="nmeta">${t('from')}: ${memberFace(n.from)} ${esc(memberName(n.from))} · 📅 ${md(n.start)} ~ ${md(n.end)}${n.alarm ? ' · ⏰ ' + n.alarm : ''}</div>
+    <button class="bigdone ${done ? 'ghost' : ''}" style="--c:${k.color}" data-done="${n.id}:${k.id}">${done ? t('undoDone') : t('didIt')}</button>
+    <button class="ghost" data-close>${t('close')}</button>`;
+}
+function renderHist() {
+  $('#histList').innerHTML = S.board.filter((n) => n.doneAt).sort((a, b) => b.doneAt - a.doneAt).map((n) => noteRow(n, today())).join('')
+    || `<p class="empty">${t('noHistory')}</p>`;
+}
+
+// ---------- 우체통 ----------
+let mailWho = null, mailTo = new Set(), marking = false;
+function openMail() {
+  if (isParent() && !S.me.member) return alert(t('e_need_member'));
+  mailWho = isParent() ? S.me.member : null;
+  if (mailWho) mailTo = new Set(S.kids.map((k) => k.id));
+  renderMail(); $('#mailDlg').showModal();
+}
+function renderMail(listOnly) {
+  const parent = isParent();
+  $('#mailTop').innerHTML = parent ? `<button class="ghost" data-push>${S.me.push && window.Notification?.permission === 'granted' ? t('notifOn') : t('notifTurnOn')}</button>` : '';
+  if (!mailWho) { // 태블릿: 누가 보내요?
+    $('#mailBody').innerHTML = `<h3 style="text-align:center">${t('whoSends')}</h3><div class="faces">${S.kids.map((k) => {
+      const u = unreadFor(k.id);
+      return `<button class="face big" style="--c:${k.color}" data-mailwho="${k.id}">${esc(k.emoji)}<b>${esc(k.name)}</b>${u ? `<span class="badge">${u}</span>` : ''}</button>`;
+    }).join('')}</div>`;
+    return;
+  }
+  if (!listOnly || !$('#mailList')) {
+    $('#mailBody').innerHTML = `<div class="row">${parent ? '' : `<button class="ghost" data-mailback>${t('back')}</button>`}
+        <h3>${memberFace(mailWho)} ${esc(memberName(mailWho))}</h3></div>
+      <div class="mailgrid">
+        <div class="col">
+          <b>${t('to')}</b><div class="chips" id="toChips"></div>
+          <div class="phrases">${t(parent ? 'parentPhrases' : 'kidPhrases').map((p) => `<button class="ghost phrase" data-phrase="${esc(p)}">${esc(p)}</button>`).join('')}</div>
+          <form class="row" data-mailsend><input name="text" maxlength="100" placeholder="${t('writePh')}" required autocomplete="off"><button>${t('send')}</button></form>
+        </div>
+        <ul class="maillist" id="mailList"></ul>
+      </div>`;
+    renderToChips();
+  }
+  renderMailList();
+}
+function renderToChips() {
+  const opts = [...PARENTS, ...S.kids.map((k) => k.id)].filter((m) => m !== mailWho);
+  const all = opts.every((m) => mailTo.has(m));
+  $('#toChips').innerHTML = opts.map((m) => `<button type="button" class="chip ${mailTo.has(m) ? 'on' : ''}" style="--c:${memberColor(m)}" data-to="${m}">${memberFace(m)} ${esc(memberName(m))}</button>`).join('')
+    + `<button type="button" class="chip ${all ? 'on' : ''}" data-to="*">👨‍👩‍👧‍👦 ${t('all')}</button>`;
+}
+function renderMailList() {
+  const phrases = t(isParent() ? 'parentPhrases' : 'kidPhrases');
+  const mine = S.mail.filter((m) => m.from === mailWho || m.to.includes(mailWho)).slice(0, 40);
+  $('#mailList').innerHTML = mine.map((m) => {
+    const unread = m.to.includes(mailWho) && !m.readBy.includes(mailWho);
+    const orig = m.re && S.mail.find((x) => x.id === m.re);
+    const time = new Date(m.at).toLocaleString(t('locale'), { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const foot = m.from === mailWho
+      ? `<div class="reads">${m.to.map((r) => `${m.readBy.includes(r) ? '✓' : '·'} ${esc(memberName(r))}`).join('  ')} ${t('read')}</div>`
+      : `<div class="quick">${phrases.slice(0, 4).map((p) => `<button class="ghost" data-reply="${m.id}" data-txt="${esc(p)}">${esc(p)}</button>`).join('')}</div>`;
+    return `<li class="mail ${unread ? 'unread' : ''}">
+      <div class="mhead">${memberFace(m.from)} <b>${esc(memberName(m.from))}</b> → ${m.to.map((r) => esc(memberName(r))).join(', ')} · ${time}
+        <button class="x" data-del="delMail:${m.id}">✕</button></div>
+      ${orig ? `<div class="re">↩ ${esc(orig.text)}</div>` : ''}
+      <div class="mtext">${esc(m.text)}</div>${foot}</li>`;
+  }).join('') || `<p class="empty">${t('noMail')}</p>`;
+  if ($('#mailDlg').open && unreadFor(mailWho) && !marking) { // 열어서 봤으면 읽음 표시
+    marking = true;
+    act('readMail', { who: mailWho }).catch(() => {}).finally(() => marking = false);
+  }
+}
+async function sendMail(text, to = [...mailTo], re) {
+  if (!to.length) return alert(t('pickTo'));
+  await act('sendMail', { from: mailWho, to, text, re });
+  beep(1, 990);
+}
+$('#mailDlg').addEventListener('close', () => { if (S && !isParent()) mailWho = null; });
+
+async function enablePush() { // 부모 폰 알림 켜기
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !window.Notification) return alert(t('notifUnsupported'));
+  if (await Notification.requestPermission() !== 'granted') return alert(t('notifDenied'));
+  const reg = await navigator.serviceWorker.register('/sw.js');
+  await navigator.serviceWorker.ready;
+  const key = Uint8Array.from(atob(S.vapid.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
+  const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+  await act('subscribe', { endpoint: sub.endpoint, lang });
+  alert(t('notifReady'));
+}
+
+// ---------- 소리 (태블릿 알람·새 쪽지) ----------
+let ac;
+document.addEventListener('pointerdown', () => { try { ac ||= new AudioContext(); ac.resume(); } catch {} }); // 브라우저는 한 번 터치한 뒤에만 소리를 허용
+function beep(times = 3, freq = 880) {
+  if (!ac) return;
+  for (let i = 0; i < times; i++) {
+    const o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime + i * 0.3;
+    o.frequency.value = freq; o.connect(g); g.connect(ac.destination);
+    g.gain.setValueAtTime(0.35, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.25);
+    o.start(t0); o.stop(t0 + 0.26);
+  }
+}
+// 매일 정한 시각에, 기간 안이고 아직 안 한 아이가 있으면 태블릿에서 알람 (그 아이들 얼굴만 표시)
+const rung = new Set(); let alarmTimer = null;
+function checkAlarms() {
+  if (!S || isParent()) return;
+  const hm = new Date().toTimeString().slice(0, 5), td = today();
+  for (const n of activeNotes()) {
+    if (!n.alarm || n.alarm !== hm || td < n.start || td > n.end || rung.has(n.id + td)) continue;
+    rung.add(n.id + td);
+    const left = n.to.filter((k) => !n.doneBy[k] && kidOf(k));
+    if (!left.length) continue;
+    $('#alarmText').textContent = n.text;
+    $('#alarmFaces').innerHTML = left.map((k) => `<button class="face big" style="--c:${kidOf(k).color}" data-note="${n.id}:${k}">${esc(kidOf(k).emoji)}<b>${esc(kidOf(k).name)}</b></button>`).join('');
+    $('#alarm').hidden = false;
+    let n2 = 0; clearInterval(alarmTimer); beep();
+    alarmTimer = setInterval(() => { if (++n2 > 30) stopAlarm(); else beep(); }, 2000); // 1분 동안 울림
+  }
+}
+function stopAlarm() { clearInterval(alarmTimer); $('#alarm').hidden = true; }
+
+// ---------- 설정 ----------
 function renderSettings() {
   $('#settingsBody').innerHTML = S.kids.map((k) => `<section>
     <form class="row" data-kid="${k.id}">
@@ -252,44 +551,89 @@ function renderSettings() {
     <ul style="margin:.6rem 0">${k.tasks.map((x) => `<li>${esc(x.text)}<button class="x" style="margin-left:auto" data-deltask="${k.id}:${x.id}">🗑</button></li>`).join('')}</ul>
     <form class="row" data-addtask="${k.id}"><input name="text" placeholder="${t('taskPh')}" maxlength="30" required><button>${t('add')}</button></form>
   </section>`).join('') + `<section><h4>${t('devices')}</h4><ul>${S.devices.map((d) => `<li>
-    ${d.role === 'parent' ? '🔑' : '🖥️'} ${esc(d.name)} ${d.me ? t('thisDevice') : ''}
-    ${d.me ? '' : `<button class="x" style="margin-left:auto" data-deldev="${d.id}">${t('unregister')}</button>`}</li>`).join('')}</ul></section>`;
+    ${d.role === 'parent' ? '🔑' : '🖥️'} ${esc(d.name)} ${d.member ? `(${memberFace(d.member)} ${t(d.member)})` : ''} ${d.me ? t('thisDevice') : ''}
+    ${d.me ? '' : `<button class="x" style="margin-left:auto" data-deldev="${d.id}">${t('unregister')}</button>`}</li>`).join('')}</ul></section>
+    <section><h4>${t('pinTitle')}</h4><form class="col" data-pin>
+      <input name="current" type="password" inputmode="numeric" pattern="\\d{4,8}" placeholder="${t('curPin')}" required autocomplete="off">
+      <input name="pin" type="password" inputmode="numeric" pattern="\\d{4,8}" placeholder="${t('newPin')}" required autocomplete="new-password">
+      <button>${t('save')}</button></form></section>`;
 }
 
 // ---------- 터치 ----------
 document.addEventListener('click', async (e) => {
   const b = e.target.closest('button'); if (!b) return;
   const d = b.dataset;
-  if (d.toggle) { const [kidId, taskId] = d.toggle.split(':'); act('toggle', { kidId, taskId, date: today() }); }
-  if (d.del) { const [type, id] = d.del.split(':'); if (confirm(t('confirmDel'))) act(type, { id }); }
-  if (d.open) {
-    const dlg = $('#' + d.open);
-    dlg.querySelectorAll('.whoSel').forEach((s) => s.innerHTML = whoList().map((w) => `<option>${esc(w)}</option>`).join(''));
-    if (dlg.querySelector('[name=date]')) dlg.querySelector('[name=date]').value = today();
-    dlg.showModal();
-  }
-  if (d.close !== undefined) b.closest('dialog').close();
-  if (d.lang !== undefined) { lang = lang === 'ko' ? 'en' : 'ko'; try { localStorage.setItem('lang', lang); } catch {} applyLang(); }
-  if (b.id === 'openSettings') { renderSettings(); $('#settingsDlg').showModal(); }
-  if (d.deltask) { const [kidId, taskId] = d.deltask.split(':'); if (confirm(t('confirmTask'))) await act('delTask', { kidId, taskId }); renderSettings(); }
-  if (d.deldev && confirm(t('confirmDev'))) { await act('delDevice', { id: d.deldev }); renderSettings(); }
+  try {
+    if (d.toggle) { const [kidId, taskId] = d.toggle.split(':'); await act('toggle', { kidId, taskId, date: today() }); }
+    if (d.del) { const [type, id] = d.del.split(':'); if (confirm(t('confirmDel'))) await act(type, { id }); }
+    if (d.open) {
+      const dlg = $('#' + d.open);
+      if (d.open === 'noteAddDlg') {
+        if (!S.me.member) return alert(t('e_need_member'));
+        $('#noteKids').innerHTML = S.kids.map((k) => `<label class="chip" style="--c:${k.color}"><input type="checkbox" name="to" value="${k.id}" checked>${esc(k.emoji)} ${esc(k.name)}</label>`).join('');
+        dlg.querySelector('[name=start]').value = today(); dlg.querySelector('[name=end]').value = addDays(6);
+      }
+      dlg.querySelectorAll('.whoSel').forEach((s) => s.innerHTML = whoList().map((w) => `<option>${esc(w)}</option>`).join(''));
+      if (dlg.querySelector('[name=date]')) dlg.querySelector('[name=date]').value = today();
+      dlg.showModal();
+    }
+    if (d.close !== undefined) b.closest('dialog').close();
+    if (d.lang !== undefined) { lang = lang === 'ko' ? 'en' : 'ko'; try { localStorage.setItem('lang', lang); } catch {} applyLang(); }
+    if (b.id === 'openSettings') { renderSettings(); $('#settingsDlg').showModal(); }
+    if (b.id === 'openMail') openMail();
+    if (d.deltask) { const [kidId, taskId] = d.deltask.split(':'); if (confirm(t('confirmTask'))) await act('delTask', { kidId, taskId }); }
+    if (d.deldev && confirm(t('confirmDev'))) await act('delDevice', { id: d.deldev });
+    if (d.setme) await act('setMe', { member: d.setme });
+    // 게시판
+    if (d.note) { stopAlarm(); const [id, kid] = d.note.split(':'); openNote(id, kid); }
+    if (d.done) {
+      const [id, kid] = d.done.split(':');
+      await act('doneNote', { id, kid });
+      if (S.board.find((n) => n.id === id)?.doneBy[kid]) { beep(3, 1180); $('#noteDlg').close(); }
+    }
+    if (d.hist !== undefined) { renderHist(); $('#histDlg').showModal(); }
+    if (d.alarmok !== undefined) stopAlarm();
+    // 우체통
+    if (d.mailwho) { mailWho = d.mailwho; mailTo = new Set(PARENTS); renderMail(); }
+    if (d.mailback !== undefined) { mailWho = null; renderMail(); }
+    if (d.to) {
+      const opts = [...PARENTS, ...S.kids.map((k) => k.id)].filter((m) => m !== mailWho);
+      if (d.to === '*') mailTo = opts.every((m) => mailTo.has(m)) ? new Set() : new Set(opts);
+      else mailTo.has(d.to) ? mailTo.delete(d.to) : mailTo.add(d.to);
+      renderToChips();
+    }
+    if (d.phrase) await sendMail(d.phrase);
+    if (d.reply) { const m = S.mail.find((x) => x.id === d.reply); await sendMail(d.txt, [m.from], m.id); }
+    if (d.push !== undefined) await enablePush();
+  } catch {} // 오류 안내는 api()에서
 });
 document.addEventListener('submit', async (e) => {
-  const f = e.target, v = Object.fromEntries(new FormData(f));
-  if (f.dataset.act) { e.preventDefault(); await act(f.dataset.act, v); f.reset(); f.closest('dialog').close(); }
-  if (f.dataset.kid) { e.preventDefault(); await act('saveKid', { id: f.dataset.kid, ...v }); renderSettings(); }
-  if (f.dataset.addtask) { e.preventDefault(); await act('addTask', { kidId: f.dataset.addtask, ...v }); renderSettings(); }
+  const f = e.target, ds = f.dataset, fd = new FormData(f), v = Object.fromEntries(fd);
+  if (f.id === 'gateForm') return;
+  e.preventDefault();
+  try {
+    if (ds.act) { await act(ds.act, v); f.reset(); f.closest('dialog').close(); }
+    if (ds.kid) await act('saveKid', { id: ds.kid, ...v });
+    if (ds.addtask) await act('addTask', { kidId: ds.addtask, ...v });
+    if ('pin' in ds) { await act('changePin', v); f.reset(); alert(t('pinChanged')); }
+    if ('addnote' in ds) {
+      if (!fd.getAll('to').length) return alert(t('pickTo'));
+      await act('addNote', { ...v, to: fd.getAll('to') }); f.reset(); f.closest('dialog').close();
+    }
+    if ('mailsend' in ds) { await sendMail(v.text); f.reset(); }
+  } catch {}
 });
 
-// ---------- 시계 + 자정에 할 일 초기화 ----------
+// ---------- 시계 + 자정에 할 일 초기화 + 알람 ----------
 function tick() {
   const n = new Date();
   $('#clock').textContent = n.toLocaleTimeString(t('locale'), { hour: 'numeric', minute: '2-digit' });
   $('#date').textContent = n.toLocaleDateString(t('locale'), { month: 'long', day: 'numeric', weekday: 'long' });
   if (S && day !== today()) { day = today(); render(); }
+  checkAlarms();
 }
 setInterval(tick, 5000); applyLang();
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S) load().catch(() => {}); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S) checkVer().catch(() => {}); });
 boot();
 </script>
 </body>

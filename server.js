@@ -5,15 +5,19 @@ const path = require('path');
 const handler = require('./api');
 
 const PORT = process.env.PORT || 3000;
-const HTML = path.join(__dirname, 'public', 'index.html');
+const FILES = { // public/ 의 파일만, 이름을 정해서 제공
+  '/': ['index.html', 'text/html; charset=utf-8'],
+  '/sw.js': ['sw.js', 'text/javascript; charset=utf-8'],
+  '/manifest.json': ['manifest.json', 'application/manifest+json'],
+};
 
 http.createServer((req, res) => {
-  if (req.url.split('?')[0] === '/api') return handler(req, res);
-  if (req.method === 'GET' && req.url === '/') {
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-    return res.end(fs.readFileSync(HTML));
-  }
-  res.writeHead(404).end();
+  const p = req.url.split('?')[0];
+  if (p === '/api') return handler(req, res);
+  const f = req.method === 'GET' && FILES[p];
+  if (!f) return res.writeHead(404).end();
+  res.writeHead(200, { 'Content-Type': f[1], 'Cache-Control': 'no-store' });
+  res.end(fs.readFileSync(path.join(__dirname, 'public', f[0])));
 }).listen(PORT, '0.0.0.0', () => {
   const ips = Object.values(require('os').networkInterfaces()).flat().filter((i) => i.family === 'IPv4' && !i.internal).map((i) => i.address);
   console.log(`가족 대시보드: http://localhost:${PORT}  (저장소: ${process.env.FIREBASE_DB_URL ? 'Firebase' : 'data.json'})`);
