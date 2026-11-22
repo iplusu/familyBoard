@@ -9,6 +9,8 @@ const FILES = { // public/ 의 파일만, 이름을 정해서 제공
   '/': ['index.html', 'text/html; charset=utf-8'],
   '/sw.js': ['sw.js', 'text/javascript; charset=utf-8'],
   '/manifest.json': ['manifest.json', 'application/manifest+json'],
+  '/icon-192.png': ['icon-192.png', 'image/png'],
+  '/icon-512.png': ['icon-512.png', 'image/png'],
 };
 
 http.createServer((req, res) => {
