@@ -207,8 +207,8 @@ const actions = {
   delMemo: { parent: true, run(db, b) { db.memos = db.memos.filter((m) => m.id !== b.id); } },
   saveKid: { parent: true, run(db, b) { const k = find(db.kids, b.id); k.name = str(b.name, 12); k.emoji = str(b.emoji, 8); k.color = match(b.color, /^#[0-9a-fA-F]{6}$/); } },
   addTask: { parent: true, run(db, b) {
-    const k = find(db.kids, b.kidId), slot = pick(b.slot, SLOTS);
-    if (k.tasks.filter((t) => t.slot === slot).length >= 8) throw 400;
+    const k = find(db.kids, b.kidId), slot = b.slot ? pick(b.slot, SLOTS) : 'am'; // 시간대는 화면에서 안 씀 (예전 데이터 호환으로 칸만 남김)
+    if (k.tasks.length >= 20) throw 400;
     k.tasks.push({ id: id(), text: str(b.text, 30), slot, doneOn: null });
   } },
   editTask: { parent: true, run(db, b) { const t = find(find(db.kids, b.kidId).tasks, b.taskId); t.text = str(b.text, 30); } },
