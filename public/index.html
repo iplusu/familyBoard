@@ -151,7 +151,7 @@
 
   /* 오른쪽 칸은 촘촘하게 (태블릿 한 화면) */
   .side .card { padding: .75rem .75rem; }
-  .side .card h2 { font-size: var(--fs-m); margin-bottom: .25rem; }
+  .side .card h2 { font-size: var(--fs-m); margin-bottom: .25rem; flex-wrap: wrap; row-gap: .25rem; } /* 좁으면 버튼은 다음 줄로 */
   .side .card h2 .add { width: 2.3rem; height: 2.3rem; font-size: 1.25rem; }
   .side .card h2 .hist { padding: .25rem .5rem; }
   .side ul { gap: .25rem; }
@@ -165,7 +165,7 @@
   .side li.ev .etitle, .side li.ev .who { grid-row: 2; }
   .side li.ev .etitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .side li.ev .who { margin-left: 0; }
-  .side .card h2 > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .side .card h2 > span { flex: 1 0 auto; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .side li { padding: .25rem .5rem; font-size: var(--fs-s); border-radius: var(--r2); }
   .side .face { width: 2.4rem; height: 2.4rem; font-size: 1.25rem; }
   .side li.note .box { font-size: 1.1rem; }
@@ -278,7 +278,7 @@
     <div class="when"><div id="date"></div><div id="clock"></div></div>
     <div id="wx"></div>
     <div class="right">
-      <span id="mePick"></span><span id="devName"></span>
+      <span id="mePick"></span>
       <button class="ghost" data-lang></button>
       <button id="openMail"><span data-i="mailbox"></span><b class="badge" id="mailBadge" hidden></b></button>
       <button class="ghost" id="openSettings" data-i="settings" hidden></button>
@@ -287,7 +287,7 @@
   <main>
     <div id="kids"></div>
     <div class="side">
-      <section class="card"><h2><span data-i="events"></span><button class="ghost hist" data-calopen>🗓</button><button class="add" data-open="eventDlg">＋</button></h2><div id="events"></div></section>
+      <section class="card"><h2><span data-i="events"></span><button class="ghost hist" data-calopen data-i="calendar"></button><button class="add" data-open="eventDlg" data-ia="addEvent">＋</button></h2><div id="events"></div></section>
     </div>
   </main>
 </div>
@@ -362,7 +362,7 @@ let S = null, day = today(), poll = null, lastVer;
 // ---------- 언어 (기기마다 따로 기억) ----------
 const L = {
   ko: { locale: 'ko-KR', other: 'English', title: '🏠 우리 가족 보드', namePh: '이 기기 이름 (예: 거실 태블릿, 엄마 폰)', pinPh: '부모 PIN (숫자 4~8자리)',
-    roleFamily: '👨‍👩‍👧‍👦 가족 화면', roleParent: '🔑 부모 기기', start: '시작하기', settings: '⚙️ 설정', events: '📅 다가오는 일정', memos: '💬 메모',
+    roleFamily: '👨‍👩‍👧‍👦 가족 화면', roleParent: '🔑 부모 기기', start: '시작하기', settings: '⚙️ 설정', events: '📅 다가오는 일정', calendar: '🗓 달력', memos: '💬 메모',
     addEvent: '📅 일정 추가', eventPh: '무엇을? (예: 태권도)', add: '추가', cancel: '취소', addMemo: '💬 메모 남기기', memoPh: '하고 싶은 말', post: '붙이기',
     settingsTitle: '⚙️ 설정 (부모)', close: '닫기', setupMsg: '처음 오셨네요! 부모 PIN을 만들어 주세요. 이 기기는 부모 기기로 등록돼요.',
     registerMsg: '이 기기를 등록하려면 부모 PIN을 입력하세요.', today: '오늘', tomorrow: '내일', noTasks: '할 일이 없어요', todoTitle: '✅ 매일 할 일', deposit: '적립금', saved: '저장했어요', rewardGot: '🎉 +$1 적립!', rewardLeft: '🎁 {n}개 더 → $1', cheer: '🎉 다 했어요! 최고!',
@@ -397,7 +397,7 @@ const L = {
     calOn: '연결됨 ✓', calLast: '마지막 동기화', calNow: '지금 동기화', calOff: '연결 해제', confirmCalOff: '외부 달력 연결을 끊을까요?', addHere: '＋ 이날 일정',
     e_cal_fetch: '달력을 불러오지 못했어요. 주소를 확인해 주세요.', e_cal_big: '달력이 너무 커요', e_cal_format: 'iCal 형식이 아니에요' },
   en: { locale: 'en-US', other: '한국어', title: '🏠 Our Family Board', namePh: "Device name (e.g. Living room tablet, Mom's phone)", pinPh: 'Parent PIN (4–8 digits)',
-    roleFamily: '👨‍👩‍👧‍👦 Family screen', roleParent: '🔑 Parent device', start: 'Start', settings: '⚙️ Settings', events: '📅 Upcoming', memos: '💬 Notes',
+    roleFamily: '👨‍👩‍👧‍👦 Family screen', roleParent: '🔑 Parent device', start: 'Start', settings: '⚙️ Settings', events: '📅 Upcoming', calendar: '🗓 Calendar', memos: '💬 Notes',
     addEvent: '📅 Add event', eventPh: 'What? (e.g. Soccer practice)', add: 'Add', cancel: 'Cancel', addMemo: '💬 Leave a note', memoPh: 'Your message', post: 'Post',
     settingsTitle: '⚙️ Settings (parents)', close: 'Close', setupMsg: 'Welcome! Create a parent PIN. This device will be registered as a parent device.',
     registerMsg: 'Enter the parent PIN to register this device.', today: 'Today', tomorrow: 'Tomorrow', noTasks: 'Nothing to do', todoTitle: '✅ Daily to-dos', deposit: 'Deposit', saved: 'Saved', rewardGot: '🎉 +$1 earned!', rewardLeft: '🎁 {n} more → $1', cheer: '🎉 All done! Great job!',
@@ -440,6 +440,7 @@ function applyLang() {
   document.documentElement.lang = lang; document.title = t('title').replace(/^\S+\s/, '');
   document.querySelectorAll('[data-i]').forEach((el) => el.textContent = t(el.dataset.i));
   document.querySelectorAll('[data-ip]').forEach((el) => el.placeholder = t(el.dataset.ip));
+  document.querySelectorAll('[data-ia]').forEach((el) => el.ariaLabel = t(el.dataset.ia)); // 글자 없는 버튼의 이름
   document.querySelectorAll('[data-lang]').forEach((el) => el.textContent = '🌐 ' + t('other'));
   tick();
   if (S) refresh();
@@ -549,7 +550,6 @@ function render() {
   const td = today(), parent = isParent();
   document.body.classList.toggle('parent', parent);
   $('#openSettings').hidden = !parent;
-  $('#devName').textContent = S.me.name;
   renderWx(); loadWeather();
   $('#mePick').innerHTML = parent && !S.me.member
     ? `${t('whoAreYou')} ${PARENTS.map((m) => `<button class="ghost" data-setme="${m}">${memberFace(m)} ${t(m)}</button>`).join(' ')}` : '';
