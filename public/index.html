@@ -22,7 +22,7 @@
   body.night { --bg: #121327; --card: #1D1F3B; --ink: #F5F1E3; --gray: #BDB8A8; --mute: #8C88A0; --line: rgba(255,255,255,.14); --soft: #3A3519; --cream: #26284A;
     --track: #2E3054; --btn: #FFDE59; --btntx: #1A1A1A; --btnEdge: #B8962A; --home: #1F3A2A; --homeTx: #9BE3A8; --shadow: 0 3px 0 rgba(0,0,0,.3); }
   * { box-sizing: border-box; }
-  body { margin: 0; height: 100vh; height: 100dvh; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); display: flex; flex-direction: column; background: var(--bg); color: var(--ink); transition: background .6s;
+  body { margin: 0; height: 100vh; height: var(--vh, 100dvh); /* --vh: 실제 보이는 높이 (안드로이드 주소창·시스템 바 때문에 100vh가 더 길게 잡힐 때가 있음) */ padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); display: flex; flex-direction: column; background: var(--bg); color: var(--ink); transition: background .6s;
     font-family: "Nunito", "Jua", system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; font-weight: 700; font-synthesis: none; -webkit-tap-highlight-color: transparent; }
   button, input, select, textarea { font: inherit; }
   button { cursor: pointer; border: 0; border-radius: 99px; padding: .5rem 1.1rem; background: var(--btn); color: var(--btntx); font-weight: 900; box-shadow: 0 4px 0 var(--btnEdge); transition: transform .08s, box-shadow .08s; }
@@ -646,7 +646,11 @@ function openList(id) {
   $('#listBody').querySelector('.more')?.remove();
   showDlg($('#listDlg'));
 }
-addEventListener('resize', () => S && render());
+addEventListener('resize', () => { fitH(); if (S) render(); });
+function fitH() { document.documentElement.style.setProperty('--vh', innerHeight + 'px'); }
+fitH();
+// 화면 크기 확인: 시계를 누르면 잠깐 표시 (태블릿 해상도 맞출 때)
+$('#clock').addEventListener('click', () => toast(`${innerWidth}×${innerHeight} · DPR ${devicePixelRatio} · ${screen.width}×${screen.height} · page +${document.documentElement.scrollHeight - innerHeight}px · ${matchMedia('(display-mode: standalone)').matches ? 'app' : 'browser'}`));
 
 // ---------- 적립금 ----------
 const money = (c) => '$' + ((c || 0) / 100).toFixed(2);
