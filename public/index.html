@@ -27,6 +27,15 @@
   input, select, textarea { padding: .75rem 1rem; border: 2px solid var(--line); border-radius: var(--r2); background: var(--cream); color: var(--ink); min-width: 0; }
   textarea { min-height: 5rem; resize: vertical; }
   [hidden] { display: none !important; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  button:disabled { opacity: .55; cursor: progress; transition: opacity .1s .25s; } /* 빨리 끝나면 깜빡이지 않게 늦게 흐려짐 */
+  #loading { position: fixed; inset: 0; z-index: 5; display: grid; place-content: center; justify-items: center; gap: .5rem; background: var(--bg); font-size: var(--fs-xl); font-weight: 800; text-align: center; }
+  #loading > span { animation: pulse 1s ease-in-out infinite alternate; }
+  @keyframes pulse { to { opacity: .3; transform: scale(.9); } }
+  #toast { inset: auto 0 1.5rem; margin: 0 auto; max-width: min(560px, 92vw); padding: .75rem 1rem; border: 0; border-radius: var(--r2);
+    background: var(--btn); color: var(--btntx); font-weight: 700; font-size: var(--fs-m); box-shadow: var(--shadow-lg); text-align: center; }
+  #toast.bad { background: var(--danger); color: var(--on-color); }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
   /* 위: 왼쪽에 날짜·시간 크게 | 오른쪽 위 작은 상태줄 한 줄, 그 아래 날씨 */
   header { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "when right" "when wx"; column-gap: 1.5rem; row-gap: .25rem; padding: .5rem 1rem .5rem; align-items: center; }
@@ -246,6 +255,9 @@
 </head>
 <body>
 
+<div id="loading" role="status"><span>🏠</span></div>
+<div id="toast" popover="manual" role="status"></div>
+
 <div id="gate" hidden>
   <form id="gateForm" class="card">
     <div class="row"><h1 data-i="title"></h1><button type="button" class="ghost" data-lang style="margin-left:auto"></button></div>
@@ -438,8 +450,18 @@ async function api(url, data) {
   const r = await fetch(url, data ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) } : {});
   const j = await r.json().catch(() => ({}));
   if (r.status === 401) { boot(); throw new Error('unregistered'); }
-  if (!r.ok) { if (data) alert(L[lang]['e_' + j.error] || t('e_server_error')); throw new Error(j.error); } // 자동 새로고침 실패는 조용히
+  if (!r.ok) { if (data) toast(L[lang]['e_' + j.error] || t('e_server_error'), true); throw new Error(j.error); } // 자동 새로고침 실패는 조용히
   return j;
+}
+// 화면 안 알림 (열린 창 위에도 보이게 popover로). 오류는 빨강, 조금 더 오래
+let toastT;
+function toast(msg, bad) {
+  const el = $('#toast');
+  if (!el.showPopover) return alert(msg); // 아주 오래된 브라우저
+  el.textContent = msg; el.classList.toggle('bad', !!bad);
+  if (el.matches(':popover-open')) el.hidePopover();
+  el.showPopover();
+  clearTimeout(toastT); toastT = setTimeout(() => el.hidePopover(), bad ? 6000 : 3000);
 }
 const act = (type, data) => api('/api?r=action', { type, ...data }).then(checkVer);
 async function checkVer() { // 바뀐 게 있을 때만 전체를 다시 받음
@@ -454,7 +476,7 @@ async function boot() {
   const me = await (await fetch('/api?r=me')).json();
   if (me.device) return start();
   clearInterval(poll); S = null;
-  $('#board').hidden = true; $('#gate').hidden = false;
+  $('#board').hidden = true; $('#gate').hidden = false; $('#loading').hidden = true;
   gateMode = me.setup ? 'register' : 'setup';
   const join = me.setup && joinCode();
   $('#roles').hidden = gateMode === 'setup' || !!join;
@@ -478,6 +500,7 @@ async function start() {
   poll = setInterval(() => { if (!document.hidden) checkVer().catch(() => {}); }, POLL_MS);
   lastVer = undefined;
   await checkVer();
+  $('#loading').hidden = true;
   navigator.wakeLock?.request('screen').catch(() => {});
   if (location.search.includes('mail=1')) { history.replaceState(null, '', '/'); openMail(); } // 알림을 눌러서 열었을 때
 }
@@ -773,7 +796,7 @@ function renderHist() {
 // ---------- 우체통 ----------
 let mailWho = null, mailTo = new Set(), marking = false;
 function openMail() {
-  if (isParent() && !S.me.member) return alert(t('e_need_member'));
+  if (isParent() && !S.me.member) return toast(t('e_need_member'), true);
   mailWho = isParent() ? S.me.member : null;
   if (mailWho) mailTo = new Set(S.kids.map((k) => k.id));
   renderMail(); $('#mailDlg').showModal();
@@ -831,21 +854,21 @@ function renderMailList() {
   }
 }
 async function sendMail(text, to = [...mailTo], re) {
-  if (!to.length) return alert(t('pickTo'));
+  if (!to.length) return toast(t('pickTo'), true);
   await act('sendMail', { from: mailWho, to, text, re });
   beep(1, 990);
 }
 $('#mailDlg').addEventListener('close', () => { if (S && !isParent()) mailWho = null; });
 
 async function enablePush() { // 부모 폰 알림 켜기
-  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !window.Notification) return alert(t('notifUnsupported'));
-  if (await Notification.requestPermission() !== 'granted') return alert(t('notifDenied'));
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !window.Notification) return toast(t('notifUnsupported'), true);
+  if (await Notification.requestPermission() !== 'granted') return toast(t('notifDenied'), true);
   const reg = await navigator.serviceWorker.register('/sw.js');
   await navigator.serviceWorker.ready;
   const key = Uint8Array.from(atob(S.vapid.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
   const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
   await act('subscribe', { endpoint: sub.endpoint, lang });
-  alert(t('notifReady'));
+  toast(t('notifReady'));
 }
 
 // ---------- 소리 (태블릿 알람·새 쪽지) ----------
@@ -958,15 +981,17 @@ function renderSettings() {
 
 // ---------- 터치 ----------
 document.addEventListener('click', async (e) => {
-  const b = e.target.closest('button'); if (!b) return;
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
   const d = b.dataset;
+  if (d.reload !== undefined) return location.reload();
+  b.disabled = true; // 처리 중 두 번 눌림 방지
   try {
     if (d.bump) { const a = b.form.amount; a.value = Math.min(100000, Math.max(0, (+a.value || 0) + +d.bump)).toFixed(2); }
-    if (d.copylink !== undefined) { await navigator.clipboard.writeText(inviteLink).then(() => alert(t('copied')), () => $('#inviteLink').select()); }
+    if (d.copylink !== undefined) { await navigator.clipboard.writeText(inviteLink).then(() => toast(t('copied')), () => $('#inviteLink').select()); }
     if (d.sharelink !== undefined) await navigator.share({ url: inviteLink }).catch(() => {});
     if (d.geo !== undefined) navigator.geolocation.getCurrentPosition(
       (p) => act('setPlace', { name: t('wxHere'), lat: p.coords.latitude, lon: p.coords.longitude, unit: S.place?.unit || 'C' }).catch(() => {}),
-      (e) => alert(e.message), { timeout: 10000 });
+      (e) => toast(e.message, true), { timeout: 10000 });
     if (d.noplace !== undefined) await act('setPlace', { name: '' });
     if (d.more) openList(d.more);
     if (d.calopen !== undefined) openCal();
@@ -987,7 +1012,7 @@ document.addEventListener('click', async (e) => {
     if (d.open) {
       const dlg = $('#' + d.open);
       if (d.open === 'noteAddDlg') {
-        if (!S.me.member) return alert(t('e_need_member'));
+        if (!S.me.member) return toast(t('e_need_member'), true);
         $('#noteKids').innerHTML = S.kids.map((k) => `<label class="chip" style="--c:${k.color}"><input type="checkbox" name="to" value="${k.id}" checked>${esc(k.emoji)} ${esc(k.name)}</label>`).join('');
         dlg.querySelector('[name=start]').value = today(); dlg.querySelector('[name=end]').value = addDays(6);
       }
@@ -1023,7 +1048,7 @@ document.addEventListener('click', async (e) => {
     if (d.phrase) await sendMail(d.phrase);
     if (d.reply) { const m = S.mail.find((x) => x.id === d.reply); await sendMail(d.txt, [m.from], m.id); }
     if (d.push !== undefined) await enablePush();
-  } catch {} // 오류 안내는 api()에서
+  } catch {} finally { b.disabled = false; } // 오류 안내는 api()에서
 });
 document.addEventListener('change', (e) => {
   if (e.target.matches('form.dev [name=role]')) { // 부모 기기로 바꿀 때만 PIN 칸
@@ -1036,13 +1061,14 @@ document.addEventListener('submit', async (e) => {
   const f = e.target, ds = f.dataset, fd = new FormData(f), v = Object.fromEntries(fd);
   if (f.id === 'gateForm') return;
   e.preventDefault();
+  const sb = e.submitter; if (sb) sb.disabled = true;
   try {
     if (ds.act) { await act(ds.act, v); f.reset(); f.closest('dialog').close(); }
     if (ds.kid) await act('saveKid', { id: ds.kid, ...v });
     if (ds.addtask) await act('addTask', { kidId: ds.addtask, ...v });
-    if (ds.deposit) { await act('setDeposit', { kidId: ds.deposit, ...v }); alert(t('saved')); }
+    if (ds.deposit) { await act('setDeposit', { kidId: ds.deposit, ...v }); toast(t('saved')); }
     if ('class' in ds) {
-      if (!fd.getAll('days').length) return alert(t('pickDays'));
+      if (!fd.getAll('days').length) return toast(t('pickDays'), true);
       await act('saveClass', { ...v, id: ds.class || undefined, kid: ds.classkid, days: fd.getAll('days').map(Number) });
     }
     if ('makeup' in ds) await act('addMakeup', { ...v, date: calSel });
@@ -1051,17 +1077,17 @@ document.addEventListener('submit', async (e) => {
     if ('invite' in ds) { const r = await api('/api?r=action', { type: 'invite', ...v }).finally(() => f.reset()); inviteLink = `${location.origin}/?join=${r.code}`; renderSettings(); }
     if ('place' in ds) {
       const g = await getJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(v.q)}&count=1&language=${lang}`).catch(() => ({}));
-      const r = g.results?.[0]; if (!r) return alert(t('wxNotFound'));
+      const r = g.results?.[0]; if (!r) return toast(t('wxNotFound'), true);
       await act('setPlace', { name: [r.name, r.admin1].filter(Boolean).join(', '), lat: r.latitude, lon: r.longitude, unit: v.unit }); f.reset();
     }
-    if (ds.dev) { await act('editDevice', { id: ds.dev, ...v }).finally(() => { f.current.value = ''; }); alert(t('saved')); }
-    if ('pin' in ds) { await act('changePin', v); f.reset(); alert(t('pinChanged')); }
+    if (ds.dev) { await act('editDevice', { id: ds.dev, ...v }).finally(() => { f.current.value = ''; }); toast(t('saved')); }
+    if ('pin' in ds) { await act('changePin', v); f.reset(); toast(t('pinChanged')); }
     if ('addnote' in ds) {
-      if (!fd.getAll('to').length) return alert(t('pickTo'));
+      if (!fd.getAll('to').length) return toast(t('pickTo'), true);
       await act('addNote', { ...v, to: fd.getAll('to') }); f.reset(); f.closest('dialog').close();
     }
     if ('mailsend' in ds) { await sendMail(v.text); f.reset(); }
-  } catch {}
+  } catch {} finally { if (sb) sb.disabled = false; }
 });
 
 // ---------- 시계 + 자정에 할 일 초기화 + 알람 ----------
@@ -1079,7 +1105,10 @@ function tick() {
 let calTry = 0;
 setInterval(tick, 5000); applyLang();
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S) checkVer().catch(() => {}); });
-boot();
+boot().catch(() => { // 서버에 못 닿으면 다시 시도 버튼 + 거실 태블릿은 30초 뒤 저절로 다시 시도
+  $('#loading').innerHTML = `<p>${t('e_server_error')}</p><button data-reload>↻</button>`;
+  setTimeout(() => location.reload(), 30000);
+});
 </script>
 </body>
 </html>
