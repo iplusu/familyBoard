@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FFDE59">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@700;800;900&display=swap">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon-192.png">
 <title>Our Family Board</title>
@@ -15,15 +18,17 @@
     --scrim: #0009; --shadow-lg: 0 10px 40px #0004; --tshadow: 0 1px 2px #0005; }
   /* 낮: 노랑 · 밤(저녁 7시~아침 6시): 남색 */
   :root { --bg: #FFDE59; --card: #fff; --ink: #1A1A1A; --gray: #5C5850; --mute: #9A9282; --line: rgba(26,26,26,.12); --soft: #FFF3B8; --cream: #FFF9E6;
-    --track: #F1EBD6; --btn: #1A1A1A; --btntx: #fff; --home: #DDF3DE; --homeTx: #1F6B2E; --shadow: 0 3px 0 rgba(0,0,0,.06), 0 10px 24px rgba(120,90,0,.08); }
+    --track: #F1EBD6; --btn: #1A1A1A; --btntx: #fff; --btnEdge: #000; --home: #DDF3DE; --homeTx: #1F6B2E; --shadow: 0 3px 0 rgba(0,0,0,.06), 0 10px 24px rgba(120,90,0,.08); }
   body.night { --bg: #121327; --card: #1D1F3B; --ink: #F5F1E3; --gray: #BDB8A8; --mute: #8C88A0; --line: rgba(255,255,255,.14); --soft: #3A3519; --cream: #26284A;
-    --track: #2E3054; --btn: #FFDE59; --btntx: #1A1A1A; --home: #1F3A2A; --homeTx: #9BE3A8; --shadow: 0 3px 0 rgba(0,0,0,.3); }
+    --track: #2E3054; --btn: #FFDE59; --btntx: #1A1A1A; --btnEdge: #B8962A; --home: #1F3A2A; --homeTx: #9BE3A8; --shadow: 0 3px 0 rgba(0,0,0,.3); }
   * { box-sizing: border-box; }
-  body { margin: 0; height: 100dvh; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); transition: background .6s;
-    font-family: system-ui, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; height: 100vh; height: 100dvh; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); display: flex; flex-direction: column; background: var(--bg); color: var(--ink); transition: background .6s;
+    font-family: "Nunito", "Jua", system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; font-weight: 700; font-synthesis: none; -webkit-tap-highlight-color: transparent; }
   button, input, select, textarea { font: inherit; }
-  button { cursor: pointer; border: 0; border-radius: var(--r2); padding: .5rem 1rem; background: var(--btn); color: var(--btntx); font-weight: 800; }
-  button.ghost { background: var(--cream); color: var(--ink); box-shadow: inset 0 0 0 2px var(--line); }
+  button { cursor: pointer; border: 0; border-radius: 99px; padding: .5rem 1.1rem; background: var(--btn); color: var(--btntx); font-weight: 900; box-shadow: 0 4px 0 var(--btnEdge); transition: transform .08s, box-shadow .08s; }
+  button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--btnEdge); }
+  button.ghost { background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 2px var(--line), 0 4px 0 var(--line); }
+  button.ghost:active { box-shadow: inset 0 0 0 2px var(--line), 0 1px 0 var(--line); }
   input, select, textarea { padding: .75rem 1rem; border: 2px solid var(--line); border-radius: var(--r2); background: var(--cream); color: var(--ink); min-width: 0; }
   textarea { min-height: 5rem; resize: vertical; }
   [hidden] { display: none !important; }
@@ -86,16 +91,18 @@
   .todohead { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .5rem; font-size: var(--fs-m); }
   .todohead .rw { font-size: .8em; font-weight: 800; padding: .125rem .5rem; border-radius: 99px; background: var(--cream); white-space: nowrap; }
   .todohead .rw.got { background: var(--home); color: var(--homeTx); }
-  .todolist { gap: .5rem; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(60px, 1fr); min-height: 100%; } /* 태블릿: 두 칸씩, 남는 높이는 버튼이 채움 (폰은 한 칸) */
-  .todolist li { font-size: var(--fs-m); font-weight: 700; padding: 0; background: var(--cream); align-items: stretch; }
+  .todolist { gap: .75rem .6rem; padding-bottom: 5px; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(60px, 1fr); min-height: 100%; } /* 태블릿: 두 칸씩, 남는 높이는 버튼이 채움 (폰은 한 칸) */
+  .todolist li { container-type: size; font-weight: 900; padding: 0; background: none; align-items: stretch; }
+  .tdo { font-size: clamp(1rem, min(17cqi - 5px, 25cqh - 5px), 1.9rem) !important; } /* 타일 폭·높이에 맞춰 최대한 크게 (체크칸 + 두 줄이 타일 안에) */
   .todolist li.more { background: none; }
-  .tdo { width: 100%; display: flex; align-items: center; gap: .5rem; text-align: left; background: none; color: var(--ink); font: inherit; padding: .25rem .5rem; border-radius: var(--r2); min-height: 64px; }
-  .tdo .ck { flex: none; width: 1.5em; height: 1.5em; display: grid; place-items: center; border: 3px solid var(--c); border-radius: var(--r1); background: var(--card); font-style: normal; font-weight: 900; line-height: 1; color: var(--on-color); } /* 아이 색 체크칸 */
+  .tdo { width: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: .2rem; text-align: left; background: var(--card); color: var(--ink); font: inherit; padding: .4rem .7rem .5rem; border-radius: var(--r2); min-height: 64px;
+    box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--c) 35%, var(--card)), 0 5px 0 color-mix(in srgb, var(--c) 55%, var(--card)); }
+  .tdo .ck { flex: none; width: 1.25em; height: 1.25em; display: grid; place-items: center; border: 3px solid var(--c); border-radius: var(--r1); background: var(--card); font-style: normal; font-weight: 900; line-height: 1; color: var(--on-color); } /* 아이 색 체크칸 */
   .todolist li.done .ck { background: var(--c); }
   .todolist li.done .ck::after { content: '✓'; }
-  .tdo:active { background: color-mix(in srgb, var(--c) 25%, var(--cream)); }
-  .todolist li.done { background: color-mix(in srgb, var(--c) 15%, var(--cream)); }
-  .todolist li .tdo span:not(.ck) { min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.2; overflow-wrap: break-word; }
+  .tdo:active { transform: translateY(4px); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--c) 35%, var(--card)), 0 1px 0 color-mix(in srgb, var(--c) 55%, var(--card)); }
+  .todolist li.done .tdo { background: color-mix(in srgb, var(--c) 22%, var(--card)); box-shadow: 0 2px 0 color-mix(in srgb, var(--c) 40%, var(--card)); }
+  .todolist li .tdo span:not(.ck) { min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.1; overflow-wrap: break-word; }
   .todolist li.done span { text-decoration: line-through; opacity: .55; }
   .bar { height: 1.6rem; border-radius: 99px; background: var(--track); overflow: hidden; }
   .bar i { display: block; height: 100%; background: var(--c); border-radius: 99px; transition: width .4s; }
@@ -132,11 +139,11 @@
   li.today { background: var(--soft); }
   li .when { font-weight: 800; white-space: nowrap; }
   li .who { margin-left: auto; white-space: nowrap; font-size: .8em; padding: .125rem .5rem; border-radius: 99px; color: var(--on-color); background: var(--c, var(--neutral)); }
-  li .x, .x { display: none; background: none; color: var(--danger); padding: .25rem .5rem; font-size: 1.3rem; }
+  li .x, .x { display: none; background: none; box-shadow: none; color: var(--danger); padding: .25rem .5rem; font-size: 1.3rem; }
   body.parent li .x, .settings .x { display: inline-block; }
 
   /* 얼굴 버튼 (게시판·우체통) */
-  .face { position: relative; width: 3rem; height: 3rem; padding: 0; border-radius: 50%; font-size: 1.6rem; line-height: 1; background: var(--card); color: var(--ink); border: 3px solid var(--c, var(--neutral)); flex: none; }
+  .face { box-shadow: 0 3px 0 color-mix(in srgb, var(--c, var(--neutral)) 50%, var(--card)); position: relative; width: 3rem; height: 3rem; padding: 0; border-radius: 50%; font-size: 1.6rem; line-height: 1; background: var(--card); color: var(--ink); border: 3px solid var(--c, var(--neutral)); flex: none; }
   .face.done { background: color-mix(in srgb, var(--c) 30%, var(--card)); }
   .face.done::after { content: '✓'; position: absolute; right: -6px; bottom: -6px; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--ok); color: var(--on-color); font-size: var(--fs-xs); line-height: 1.3rem; }
   .face .dot { position: absolute; top: -3px; right: -3px; width: .85rem; height: .85rem; border-radius: 50%; background: var(--danger); }
@@ -149,12 +156,10 @@
   .side .card { padding: .75rem .75rem; }
   .side .card h2 { font-size: var(--fs-m); margin-bottom: .5rem; }
   .side .card h2 .add { width: 2.75rem; height: 2.75rem; font-size: 1.25rem; }
-  .side .card h2 .hist { padding: .25rem .5rem; min-height: 2.75rem; }
-  .hbtns { flex: 1; display: flex; gap: .5rem; align-items: center; }
-  .hbtns .hist { flex: 1; margin-left: 0; }
+  .hbtns { margin-left: auto; display: flex; }
   .side ul { gap: .25rem; }
   #events { display: flex; flex-direction: column; gap: .5rem; min-height: 0; flex: 1; }
-  .eg { display: flex; flex-direction: column; min-height: 0; flex: 0 1 auto; } /* 내용만큼, 넘치면 칸마다 스크롤 */
+  .eg { display: flex; flex-direction: column; min-height: 0; flex: 1 1 0; } /* 아이별로 반반, 칸마다 스크롤 */
   .eg h3 { margin: 0 0 .25rem; font-size: var(--fs-s); color: var(--ink); border-bottom: 3px solid var(--c); padding-bottom: .125rem; flex: none; }
   .eg ul { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
   .eg ul.more-below { -webkit-mask-image: linear-gradient(#000 calc(100% - 2rem), transparent); mask-image: linear-gradient(#000 calc(100% - 2rem), transparent); }
@@ -198,6 +203,8 @@
     .side { grid-template-rows: auto; }
     .mailgrid { grid-template-columns: 1fr !important; }
     .todolist { grid-template-columns: 1fr; }
+    .todolist li { container-type: normal; }
+    .tdo { font-size: var(--fs-m) !important; flex-direction: row; align-items: center; justify-content: flex-start; gap: .75rem; }
     .card { overflow: visible; }
     .todo, .eg { flex: none; }
     .eg ul { overflow: visible; -webkit-mask-image: none; mask-image: none; }
@@ -245,7 +252,7 @@
   /* 우체통 */
   .mailgrid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1rem; }
   .chips, .phrases { display: flex; flex-wrap: wrap; gap: .5rem; }
-  .chip { background: var(--card); color: var(--ink); border: 3px solid var(--line); padding: .5rem 1rem; border-radius: var(--r2); font-weight: 700; font-size: var(--fs-s); }
+  .chip { box-shadow: 0 3px 0 var(--line); background: var(--card); color: var(--ink); border: 3px solid var(--line); padding: .5rem 1rem; border-radius: var(--r2); font-weight: 700; font-size: var(--fs-s); }
   .chip.on, .chip:has(input:checked) { border-color: var(--c, var(--ink)); background: color-mix(in srgb, var(--c, var(--ink)) 22%, var(--card)); }
   .chip input { display: none; }
   .phrase { font-size: var(--fs-m); padding: .75rem 1rem; }
@@ -313,7 +320,7 @@
   <main>
     <div id="kids"></div>
     <div class="side">
-      <section class="card" data-ia="events"><h2><span class="hbtns"><button class="ghost hist" data-calopen><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg><span data-i="calendar"></span></button><button class="add" data-open="eventDlg" data-ia="addEvent"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button></span></h2><div id="events"></div></section>
+      <section class="card"><h2><span data-i="events"></span><span class="hbtns"><button class="add" data-open="eventDlg" data-ia="addEvent"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button></span></h2><div id="events"></div></section>
     </div>
   </main>
 </div>
@@ -390,11 +397,11 @@ let S = null, day = today(), poll = null, lastVer;
 // ---------- 언어 (기기마다 따로 기억) ----------
 const L = {
   ko: { locale: 'ko-KR', other: 'English', title: '🏠 우리 가족 보드', namePh: '이 기기 이름 (예: 거실 태블릿, 엄마 폰)', pinPh: '부모 PIN (숫자 4~8자리)',
-    roleFamily: '가족 화면', roleParent: '부모 기기', start: '시작하기', settings: '설정', events: '다가오는 일정', calendar: '달력', memos: '메모',
+    roleFamily: '가족 화면', roleParent: '부모 기기', start: '시작하기', settings: '설정', events: '다가오는 일정', memos: '메모',
     addEvent: '일정 추가', eventPh: '무엇을? (예: 태권도)', add: '추가', cancel: '취소', addMemo: '메모 남기기', memoPh: '하고 싶은 말', post: '붙이기',
     settingsTitle: '설정 (부모)', close: '닫기', setupMsg: '처음 오셨네요! 부모 PIN을 만들어 주세요. 이 기기는 부모 기기로 등록돼요.',
     registerMsg: '이 기기를 등록하려면 부모 PIN을 입력하세요.', today: '오늘', tomorrow: '내일', noTasks: '할 일이 없어요', todoTitle: '매일 할 일', deposit: '적립금', saved: '저장했어요', rewardGot: '🎉 +$1 적립!', rewardLeft: '🎁 {n}개 더 → $1', cheer: '🎉 다 했어요! 최고!',
-    noEvents: '일정이 없어요', later: '그 뒤', del: '삭제', prev: '이전 달', next: '다음 달', noMemos: '메모가 없어요', save: '저장', taskPh: '할 일 추가 (최대 20개)', devices: '등록된 기기', thisDevice: '(이 기기)',
+    noEvents: '일정이 없어요', later: '그 뒤', del: '삭제', offMakeup: '달력에서 휴강·보강 표시', prev: '이전 달', next: '다음 달', noMemos: '메모가 없어요', save: '저장', taskPh: '할 일 추가 (최대 20개)', devices: '등록된 기기', thisDevice: '(이 기기)',
     unregister: '해제', confirmDel: '삭제할까요?', confirmTask: '이 루틴을 지울까요?', confirmDev: '이 기기의 등록을 해제할까요?', mom: '엄마', dad: '아빠', family: '가족',
     addDevice: '＋ 기기 추가', inviteMake: '등록 링크 만들기', inviteHelp: '새 기기에서 이 링크를 열면 PIN 없이 등록돼요. 15분 안에 한 번만 쓸 수 있어요.',
     copy: '복사', promotePin: '부모 기기로 바꾸려면 PIN 입력', confirmDevMe: '이 기기의 등록을 해제할까요? 다시 쓰려면 PIN으로 등록해야 해요.', e_last_parent: '부모 기기가 하나는 남아 있어야 해요. 다른 부모 기기를 먼저 등록해 주세요.', invitePin: '부모 기기 링크는 PIN 확인 (가족 화면은 비워 두기)', e_weak_pin: '너무 쉬운 PIN이에요 (0000, 1234 같은 것). 다른 숫자로 정해 주세요.', share: '공유', copied: '복사했어요', joinMsg: '등록 링크로 들어왔어요. 이 기기 이름만 정해 주세요.', e_bad_link: '링크가 만료됐거나 이미 쓰였어요. 부모 기기에서 새 링크를 만들어 주세요.',
@@ -425,11 +432,11 @@ const L = {
     calOn: '연결됨 ✓', calLast: '마지막 동기화', calNow: '지금 동기화', calOff: '연결 해제', confirmCalOff: '외부 달력 연결을 끊을까요?', addHere: '＋ 이날 일정',
     e_cal_fetch: '달력을 불러오지 못했어요. 주소를 확인해 주세요.', e_cal_big: '달력이 너무 커요', e_cal_format: 'iCal 형식이 아니에요' },
   en: { locale: 'en-US', other: '한국어', title: '🏠 Our Family Board', namePh: "Device name (e.g. Living room tablet, Mom's phone)", pinPh: 'Parent PIN (4–8 digits)',
-    roleFamily: 'Family screen', roleParent: 'Parent device', start: 'Start', settings: 'Settings', events: 'Upcoming', calendar: 'Calendar', memos: 'Notes',
+    roleFamily: 'Family screen', roleParent: 'Parent device', start: 'Start', settings: 'Settings', events: 'Upcoming', memos: 'Notes',
     addEvent: 'Add event', eventPh: 'What? (e.g. Soccer practice)', add: 'Add', cancel: 'Cancel', addMemo: 'Leave a note', memoPh: 'Your message', post: 'Post',
     settingsTitle: 'Settings (parents)', close: 'Close', setupMsg: 'Welcome! Create a parent PIN. This device will be registered as a parent device.',
     registerMsg: 'Enter the parent PIN to register this device.', today: 'Today', tomorrow: 'Tomorrow', noTasks: 'Nothing to do', todoTitle: 'Daily to-dos', deposit: 'Deposit', saved: 'Saved', rewardGot: '🎉 +$1 earned!', rewardLeft: '🎁 {n} more → $1', cheer: '🎉 All done! Great job!',
-    noEvents: 'No events', later: 'Later', del: 'Delete', prev: 'Previous month', next: 'Next month', noMemos: 'No notes', save: 'Save', taskPh: 'Add a to-do (max 20)', devices: 'Registered devices', thisDevice: '(this device)',
+    noEvents: 'No events', later: 'Later', del: 'Delete', offMakeup: 'Mark cancellations & make-ups', prev: 'Previous month', next: 'Next month', noMemos: 'No notes', save: 'Save', taskPh: 'Add a to-do (max 20)', devices: 'Registered devices', thisDevice: '(this device)',
     unregister: 'Remove', confirmDel: 'Delete this?', confirmTask: 'Delete this routine item?', confirmDev: 'Remove this device?', mom: 'Mom', dad: 'Dad', family: 'Family',
     addDevice: '＋ Add device', inviteMake: 'Create join link', inviteHelp: 'Open this link on the new device to register it without the PIN. Works once, for 15 minutes.',
     copy: 'Copy', promotePin: 'Enter the PIN to make this a parent device', confirmDevMe: 'Remove this device? You will need the PIN to register it again.', e_last_parent: 'At least one parent device must remain. Register another parent device first.', invitePin: 'PIN (needed for a parent-device link only)', e_weak_pin: 'That PIN is too easy (like 0000 or 1234). Choose another one.', share: 'Share', copied: 'Copied', joinMsg: 'You opened a join link. Just name this device.', e_bad_link: 'This link expired or was already used. Create a new one on a parent device.',
@@ -960,6 +967,7 @@ function renderSettings() {
       <button type="button" class="x" data-deltask="${k.id}:${x.id}" aria-label="${t('del')}">${ico('trash')}</button></form>`).join('')}
     <form class="row" data-addtask="${k.id}"><input name="text" placeholder="${t('taskPh')}" maxlength="30" required><button>${t('add')}</button></form></div>
     <h4 style="margin-top:.8rem">${t('classes')}</h4>
+    <button type="button" class="ghost" data-calopen>${ico('cal')}${t('offMakeup')}</button>
     <div class="col">${S.classes.filter((c) => c.kid === k.id).map((c) => `<details class="cls"><summary>${esc(c.name)} · ${c.days.map((d) => t('wdays')[d]).join(' ')} ${c.time}</summary>${classForm(k, c)}</details>`).join('')}
     <details class="cls"><summary>${t('addClass')}</summary>${classForm(k)}</details></div>
   </section>`).join('') + `<section><h4>${t('devices')}</h4><div class="col">${S.devices.map((d) => `<form class="col dev" data-dev="${d.id}" data-role="${d.role}">
