@@ -11,7 +11,7 @@
   /* 단계: 글자 --fs-*, 둥글기 --r1·2·3 (+99px 알약, 50% 원), 간격은 .125/.25/.5/.75/1/1.5/2rem 만 씀. 색은 여기 변수로만 */
   :root { --fs-xs: .85rem; --fs-s: 1rem; --fs-m: clamp(1.1rem, 2vw, 1.4rem); --fs-l: clamp(1.3rem, 2.6vw, 1.9rem); --fs-xl: clamp(2rem, 4vw, 2.8rem); --fs-clock: clamp(3rem, 6.4vw, 5rem);
     --r1: 8px; --r2: 16px; --r3: 24px;
-    --ok: #2e9e5b; --danger: #d63a2c; --info: #2e7ad1; --warn: #e67e22; --neutral: #8a7a6a; --on-color: #fff;
+    --ok: #2e9e5b; --danger: #d63a2c; --info: #2a6fc0; --warn: #e67e22; --neutral: #8a7a6a; --on-color: #fff;
     --scrim: #0009; --shadow-lg: 0 10px 40px #0004; --tshadow: 0 1px 2px #0005; }
   /* 낮: 노랑 · 밤(저녁 7시~아침 6시): 남색 */
   :root { --bg: #FFDE59; --card: #fff; --ink: #1A1A1A; --gray: #5C5850; --mute: #9A9282; --line: rgba(26,26,26,.12); --soft: #FFF3B8; --cream: #FFF9E6;
@@ -44,7 +44,7 @@
   #clock { white-space: nowrap; font-size: var(--fs-clock); font-weight: 900; letter-spacing: -.03em; margin-top: .125rem; }
   #wx { grid-area: wx; }
   header .right { grid-area: right; justify-self: end; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .25rem .5rem; align-items: center; color: var(--mute); font-size: var(--fs-xs); white-space: nowrap; max-width: 100%; }
-  header .right button { padding: .25rem .75rem; border-radius: var(--r2); font-size: var(--fs-xs); }
+  header .right button { min-height: 44px; padding: .25rem 1rem; border-radius: var(--r2); font-size: var(--fs-s); }
   header .right #mePick { display: flex; gap: .25rem; align-items: center; }
   #openMail { font-weight: 800; }
   /* 날씨 */
@@ -59,9 +59,9 @@
   .wh b { display: flex; align-items: center; gap: .25em; }
   .wh i { font-style: normal; font-size: 1.35em; }
   .wh small { color: var(--info); font-size: .8em; }
-  .wh em { font-style: normal; color: var(--mute); font-weight: 600; margin-left: .2em; }
+  .wh em { font-style: normal; color: var(--gray); font-weight: 600; margin-left: .2em; }
   .wh.now { box-shadow: inset 0 0 0 2px var(--ink); } /* 안쪽 테두리라 줄 밖으로 안 잘림 */
-  .dust { padding: .125rem .5rem; border-radius: 99px; background: var(--c); color: var(--on-color); font-weight: 800; white-space: nowrap; font-size: var(--fs-xs); }
+  .dust { padding: .125rem .5rem; border-radius: 99px; background: color-mix(in srgb, var(--c) 20%, var(--card)); box-shadow: inset 0 0 0 2px var(--c); color: var(--ink); font-weight: 800; white-space: nowrap; font-size: var(--fs-xs); }
   .tip { font-weight: 700; font-size: var(--fs-s); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .badge { display: inline-block; min-width: 1.6em; margin-left: .4em; padding: 0 .45em; border-radius: 99px; background: var(--danger); color: var(--on-color); font-size: .8em; text-align: center; }
 
@@ -81,21 +81,21 @@
   .card h2, #clock { font-weight: 900; letter-spacing: -.02em; }
   .tasks { flex: 1; display: flex; flex-direction: column; gap: .5rem; }
   .deposit { margin-left: auto; background: var(--home); color: var(--homeTx); font-weight: 800; border-radius: 99px; padding: .125rem .75rem; font-size: .8em; white-space: nowrap; }
-  .todo { display: flex; flex-direction: column; gap: .5rem; margin: .25rem 0 .5rem; flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .todo { display: flex; flex-direction: column; gap: .5rem; margin: .25rem 0 .5rem; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
   .todo.more-below { -webkit-mask-image: linear-gradient(#000 82%, transparent); mask-image: linear-gradient(#000 82%, transparent); } /* 아래에 더 있음 */
   .todohead { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .5rem; font-size: var(--fs-m); }
   .todohead .rw { font-size: .8em; font-weight: 800; padding: .125rem .5rem; border-radius: 99px; background: var(--cream); white-space: nowrap; }
   .todohead .rw.got { background: var(--home); color: var(--homeTx); }
-  .todolist { gap: .25rem; }
-  .todolist li { font-size: var(--fs-m); font-weight: 700; padding: 0; background: var(--cream); }
+  .todolist { gap: .5rem; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(60px, 1fr); min-height: 100%; } /* 태블릿: 두 칸씩, 남는 높이는 버튼이 채움 (폰은 한 칸) */
+  .todolist li { font-size: var(--fs-m); font-weight: 700; padding: 0; background: var(--cream); align-items: stretch; }
   .todolist li.more { background: none; }
-  .tdo { width: 100%; display: flex; align-items: center; gap: .75rem; text-align: left; background: none; color: var(--ink); font: inherit; padding: .25rem .75rem .25rem .5rem; border-radius: var(--r2); min-height: 64px; }
-  .tdo .ck { flex: none; width: 1.5em; height: 1.5em; margin-left: .25rem; display: grid; place-items: center; border: 3px solid var(--c); border-radius: var(--r1); background: var(--card); font-style: normal; font-weight: 900; line-height: 1; color: var(--on-color); } /* 아이 색 체크칸 */
+  .tdo { width: 100%; display: flex; align-items: center; gap: .5rem; text-align: left; background: none; color: var(--ink); font: inherit; padding: .25rem .5rem; border-radius: var(--r2); min-height: 64px; }
+  .tdo .ck { flex: none; width: 1.5em; height: 1.5em; display: grid; place-items: center; border: 3px solid var(--c); border-radius: var(--r1); background: var(--card); font-style: normal; font-weight: 900; line-height: 1; color: var(--on-color); } /* 아이 색 체크칸 */
   .todolist li.done .ck { background: var(--c); }
   .todolist li.done .ck::after { content: '✓'; }
   .tdo:active { background: color-mix(in srgb, var(--c) 25%, var(--cream)); }
   .todolist li.done { background: color-mix(in srgb, var(--c) 15%, var(--cream)); }
-  .todolist li .tdo span:not(.ck) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .todolist li .tdo span:not(.ck) { min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.2; overflow-wrap: break-word; }
   .todolist li.done span { text-decoration: line-through; opacity: .55; }
   .bar { height: 1.6rem; border-radius: 99px; background: var(--track); overflow: hidden; }
   .bar i { display: block; height: 100%; background: var(--c); border-radius: 99px; transition: width .4s; }
@@ -103,8 +103,9 @@
   .bigdone { color: var(--on-color); }
   /* 아이별 오늘·내일 일정 */
   .agenda { display: flex; flex-direction: column; gap: .25rem; margin: .5rem 0 0; flex: none; }
-  .ag { padding: 0 .5rem; border: .25rem solid transparent; border-radius: var(--r2); background: var(--cream); font-size: var(--fs-m); font-weight: 700; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; } /* 두 줄까지, 준비물이 잘리지 않게 */
+  .ag { padding: 0 .5rem; border: .25rem solid transparent; border-radius: var(--r2); background: var(--cream); font-size: var(--fs-l); font-weight: 700; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; } /* 두 줄까지, 준비물이 잘리지 않게 */
   .ag .tm { margin-right: .5rem; }
+  .ag.one { -webkit-line-clamp: 1; }
   .cmemo { color: var(--gray); font-weight: 500; font-size: .8em; }
   .ag .prep { margin-right: .5rem; }
   .ag .off, .ci.off { text-decoration: line-through; opacity: .55; }
@@ -151,14 +152,15 @@
 
   /* 오른쪽 칸은 촘촘하게 (태블릿 한 화면) */
   .side .card { padding: .75rem .75rem; }
-  .side .card h2 { font-size: var(--fs-m); margin-bottom: .25rem; flex-wrap: wrap; row-gap: .25rem; } /* 좁으면 버튼은 다음 줄로 */
-  .side .card h2 .add { width: 2.3rem; height: 2.3rem; font-size: 1.25rem; }
-  .side .card h2 .hist { padding: .25rem .5rem; }
-  .hbtns { margin-left: auto; display: flex; gap: .5rem; align-items: center; } /* 두 버튼은 같이 줄바꿈 */
+  .side .card h2 { font-size: var(--fs-m); margin-bottom: .5rem; }
+  .side .card h2 .add { width: 2.75rem; height: 2.75rem; font-size: 1.25rem; }
+  .side .card h2 .hist { padding: .25rem .5rem; min-height: 2.75rem; }
+  .hbtns { flex: 1; display: flex; gap: .5rem; align-items: center; }
+  .hbtns .hist { flex: 1; margin-left: 0; }
   .side ul { gap: .25rem; }
   #events { display: flex; flex-direction: column; gap: .5rem; min-height: 0; flex: 1; }
   .eg { display: flex; flex-direction: column; min-height: 0; flex: 1 1 0; }
-  .eg h3 { margin: 0 0 .25rem; font-size: var(--fs-s); color: var(--c); border-bottom: 3px solid var(--c); padding-bottom: .125rem; flex: none; }
+  .eg h3 { margin: 0 0 .25rem; font-size: var(--fs-s); color: var(--ink); border-bottom: 3px solid var(--c); padding-bottom: .125rem; flex: none; }
   .eg ul { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
   .eg ul.more-below { -webkit-mask-image: linear-gradient(#000 calc(100% - 2rem), transparent); mask-image: linear-gradient(#000 calc(100% - 2rem), transparent); }
   .side li.ev { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .125rem .5rem; }
@@ -166,7 +168,6 @@
   .side li.ev .etitle, .side li.ev .who { grid-row: 2; }
   .side li.ev .etitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .side li.ev .who { margin-left: 0; }
-  .side .card h2 > span:first-child { flex: 1 0 auto; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .side li { padding: .25rem .5rem; font-size: var(--fs-s); border-radius: var(--r2); }
   .side .face { width: 2.4rem; height: 2.4rem; font-size: 1.25rem; }
   .side li.note .box { font-size: 1.1rem; }
@@ -186,7 +187,7 @@
     .kid .emoji { width: 1.5em; height: 1.5em; }
     .kid h2 { margin-bottom: .25rem; }
     .kid .todo { margin-bottom: .25rem; }
-    .tdo { min-height: 44px; padding-block: .125rem; } /* 할 일 6개가 한 화면에 */
+    .tdo { min-height: 60px; } /* 아이 손가락으로 누르기 충분하게 */
     .ag { border-width: .125rem; line-height: 1.25; }
   }
   /* 폰·세로 화면: 한 줄로 쌓고 스크롤 */
@@ -195,6 +196,7 @@
     main { grid-template-columns: minmax(0, 1fr); }
     .side { grid-template-rows: auto; }
     .mailgrid { grid-template-columns: 1fr !important; }
+    .todolist { grid-template-columns: 1fr; }
     .card, .agenda { overflow: visible; }
     .agenda, .todo, .eg { flex: none; }
     .ag { display: block; }
@@ -290,7 +292,7 @@
   <main>
     <div id="kids"></div>
     <div class="side">
-      <section class="card"><h2><span data-i="events"></span><span class="hbtns"><button class="ghost hist" data-calopen data-i="calendar"></button><button class="add" data-open="eventDlg" data-ia="addEvent">＋</button></span></h2><div id="events"></div></section>
+      <section class="card" data-ia="events"><h2><span class="hbtns"><button class="ghost hist" data-calopen data-i="calendar"></button><button class="add" data-open="eventDlg" data-ia="addEvent">＋</button></span></h2><div id="events"></div></section>
     </div>
   </main>
 </div>
@@ -443,7 +445,7 @@ function applyLang() {
   document.documentElement.lang = lang; document.title = t('title').replace(/^\S+\s/, '');
   document.querySelectorAll('[data-i]').forEach((el) => el.textContent = t(el.dataset.i));
   document.querySelectorAll('[data-ip]').forEach((el) => el.placeholder = t(el.dataset.ip));
-  document.querySelectorAll('[data-ia]').forEach((el) => el.ariaLabel = t(el.dataset.ia)); // 글자 없는 버튼의 이름
+  document.querySelectorAll('[data-ia]').forEach((el) => el.ariaLabel = t(el.dataset.ia)); // 글자 없는 버튼·칸의 이름
   document.querySelectorAll('[data-lang]').forEach((el) => el.textContent = '🌐 ' + t('other'));
   tick();
   if (S) refresh();
@@ -606,11 +608,13 @@ function fitBox(box, list, items, button) {
   }
 }
 const fitList = (ul) => fitBox(ul.closest('.card'), ul, [...ul.children].filter((li) => li.tagName === 'LI'), (txt) => `<button class="ghost" data-more="${ul.id}">${txt}</button>`);
-// 아이 카드: 할 일이 먼저. 할 일이 다 안 보이면 일정 두 번째 줄(내일)은 숨김. 첫 줄은 항상 보임
+// 아이 카드: 할 일이 먼저. 할 일이 다 안 보이면 내일 줄을 숨기고, 그래도 모자라면 오늘 줄을 한 줄로
 function fitCard(card) {
   const todo = card.querySelector('.todo'), rows = [...card.querySelectorAll('.agenda .ag')];
-  rows.forEach((r) => r.hidden = false);
-  if (rows[1] && todo && (todo.scrollHeight > todo.clientHeight + 1 || card.scrollHeight > card.clientHeight + 1)) rows[1].hidden = true;
+  const tight = () => todo && (todo.scrollHeight > todo.clientHeight + 1 || card.scrollHeight > card.clientHeight + 1);
+  rows.forEach((r) => { r.hidden = false; r.classList.remove('one'); });
+  if (rows[1] && tight()) rows[1].hidden = true; // 1) 내일 줄 숨김
+  if (rows[0] && tight()) rows[0].classList.add('one'); // 2) 오늘 줄은 한 줄로 (준비물이 맨 앞이라 그래도 보임)
   if (todo) scrollHint(todo);
 }
 const scrollHint = (el) => el.classList.toggle('more-below', el.scrollTop + el.clientHeight < el.scrollHeight - 2);
