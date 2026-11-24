@@ -93,14 +93,14 @@
   .todolist li { container-type: size; font-weight: 900; padding: 0; background: none; align-items: stretch; }
   .tdo { font-size: clamp(1rem, min(19cqi - 5px, 36cqh - 6px), 2.2rem) !important; } /* 타일 폭·높이에 맞춰 최대한 크게 (두 줄이 타일 안에) */
   .todolist li.more { background: none; }
-  .tdo { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2rem; text-align: center; --dot: color-mix(in srgb, var(--c) 14%, transparent); background: radial-gradient(circle, var(--dot) 0 4px, transparent 5px) 0 0 / 26px 26px, radial-gradient(circle, var(--dot) 0 4px, transparent 5px) 13px 13px / 26px 26px, var(--card); color: var(--ink); font: inherit; padding: .4rem .7rem .5rem; border-radius: var(--r2); min-height: 64px;
+  .tdo { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2rem; text-align: center; background: linear-gradient(var(--card), color-mix(in srgb, var(--c) 12%, var(--card))); color: var(--ink); font: inherit; padding: .4rem .7rem .5rem; border-radius: var(--r2); min-height: 64px;
     box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--c) 35%, var(--card)), 0 5px 0 color-mix(in srgb, var(--c) 55%, var(--card)); }
   .tdo::after { content: ''; position: absolute; top: .45rem; right: .45rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--c) 45%, var(--card));
     display: grid; place-items: center; font-size: 1rem; font-weight: 900; line-height: 1; color: var(--on-color); } /* 구석 동그라미: 누를 수 있다는 표시 */
   .todolist li.done .tdo::after { content: '✓'; background: var(--c); box-shadow: 0 2px 0 color-mix(in srgb, var(--c) 60%, #000); animation: stamp .35s ease-out; } /* 다 하면 ✓ 스티커 */
   @keyframes stamp { 0% { transform: scale(2.2) rotate(-20deg); opacity: 0; } 70% { transform: scale(.9); opacity: 1; } }
   .tdo:active { transform: translateY(4px); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--c) 35%, var(--card)), 0 1px 0 color-mix(in srgb, var(--c) 55%, var(--card)); }
-  .todolist li.done .tdo { --dot: rgb(255 255 255 / .35); background-color: color-mix(in srgb, var(--c) 40%, var(--card)); box-shadow: 0 2px 0 color-mix(in srgb, var(--c) 60%, var(--card)); }
+  .todolist li.done .tdo { background: color-mix(in srgb, var(--c) 40%, var(--card)); box-shadow: 0 2px 0 color-mix(in srgb, var(--c) 60%, var(--card)); }
   .todolist li .tdo span { min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.1; overflow-wrap: break-word; }
   .todolist li.done span { opacity: .8; }
   .bar { height: 1.6rem; border-radius: 99px; background: var(--track); overflow: hidden; }
