@@ -93,14 +93,12 @@
   .tabs { display: flex; gap: .4rem; flex-wrap: wrap; }
   .tabs .chip { flex: 1; }
   /* 아이별 오늘·내일 일정 */
-  .agenda { display: flex; flex-direction: column; gap: .35rem; margin: .3rem 0 0; flex: none; }
-  .agenda h3 { margin: 0; font-size: clamp(1.15rem, 2.2vw, 1.5rem); }
-  .ag { padding: .4rem .7rem; border-radius: 14px; background: var(--cream); font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 700; }
-  .ag .tm { margin-right: .4rem; }
-  .ag .memo, .cmemo { color: var(--gray); font-weight: 500; font-size: .85em; }
-  .ag .prep { font-weight: 700; font-size: .85em; }
-  .agenda .ag { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ag.off, .ci.off { text-decoration: line-through; opacity: .55; }
+  .agenda { display: flex; flex-direction: column; gap: .3rem; margin: .4rem 0 0; flex: none; }
+  .ag { padding: .3rem .7rem; border-radius: 14px; background: var(--cream); font-size: clamp(1rem, 1.8vw, 1.25rem); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ag .tm { margin-right: .5rem; color: var(--gray); }
+  .cmemo { color: var(--gray); font-weight: 500; font-size: .85em; }
+  .ag .prep { font-size: .85em; }
+  .ag .off, .ci.off { text-decoration: line-through; opacity: .55; }
   .tag { display: inline-block; font-size: .7em; padding: 0 .45em; border-radius: 8px; background: #e74c3c; color: #fff; margin-left: .3em; text-decoration: none; vertical-align: middle; }
   .tag.mk { background: #2e7ad1; }
   /* 한 달 달력 */
@@ -166,7 +164,6 @@
   .side .empty { font-size: 1rem; margin: 0; }
   .more { background: none; padding: 0; }
   .more button { width: 100%; padding: .2rem; font-size: .9rem; }
-  .agenda .more button { font-size: 1rem; padding: .3rem; }
   li.note { display: grid; grid-template-columns: auto 1fr auto auto; gap: .6rem; padding: .45rem .7rem; }
   li.note .box { font-size: 1.3rem; }
   li.note .ntext { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -177,7 +174,11 @@
 
   /* 키가 작은 태블릿(1024×600, 브라우저 창 포함 1280×720 등): 버튼은 얇게 */
   @media (max-height: 760px) and (min-width: 821px) and (orientation: landscape) {
-    .kid .emoji { width: 1.8em; height: 1.8em; }
+    .kid .emoji { width: 1.5em; height: 1.5em; }
+    .kid h2 { margin-bottom: .25rem; }
+    .kid .todo { margin-bottom: .3rem; }
+    .tdo { min-height: 46px; padding-block: .1rem; } /* 할 일 6개가 한 화면에 */
+    .tdo .ck { font-size: 1.7rem; }
   }
   /* 폰·세로 화면: 한 줄로 쌓고 스크롤 */
   @media (max-width: 820px), (orientation: portrait) {
@@ -379,7 +380,7 @@ const L = {
     e_already_setup: '이미 설정됐어요', e_setup_first: '먼저 설정하세요', e_locked: 'PIN을 여러 번 틀렸어요. 5분 후 다시 시도하세요', e_wrong_pin: 'PIN이 틀렸어요',
     e_parent_only: '부모만 할 수 있어요', e_conflict: '동시에 바뀌었어요. 다시 해 주세요', e_bad_request: '입력을 확인해 주세요', e_no_db: '서버에 Firebase가 연결되지 않았어요',
     e_need_member: '먼저 위에서 이 폰이 누구 건지 골라 주세요', e_server_error: '오류가 났어요',
-    agToday: '📅 오늘 일정', agTomorrow: '🌙 내일 일정', noAgenda: '일정이 없어요', prep: '🎒 준비물', prepPh: '준비물 (선택)', off: '휴강', makeup: '보강',
+    noAgenda: '일정이 없어요', prep: '🎒 준비물', prepPh: '준비물 (선택)', off: '휴강', makeup: '보강',
     classes: '🏫 학원', className: '학원 이름 (예: 🎹 피아노)', classMemo: '메모 (예: 3층 302호)', classPrep: '준비물 (예: 악보, 물통)',
     period: '다니는 기간 (선택)', saveClass: '저장', addClass: '＋ 새 학원', pickDays: '요일을 하나 이상 골라 주세요', confirmClass: '이 학원을 지울까요?',
     wdays: ['일', '월', '화', '수', '목', '금', '토'], markOff: '휴강 표시', unmarkOff: '휴강 취소', addMakeup: '보강 추가', classAlarm: '15분 뒤 {name}!',
@@ -414,7 +415,7 @@ const L = {
     e_already_setup: 'Already set up', e_setup_first: 'Set up first', e_locked: 'Too many wrong PINs. Try again in 5 minutes', e_wrong_pin: 'Wrong PIN',
     e_parent_only: 'Parents only', e_conflict: 'Changed at the same time. Please try again', e_bad_request: 'Please check your input', e_no_db: 'Firebase is not connected on the server',
     e_need_member: 'First choose whose phone this is (top of the screen)', e_server_error: 'Something went wrong',
-    agToday: '📅 Today', agTomorrow: '🌙 Tomorrow', noAgenda: 'Nothing scheduled', prep: '🎒 Bring', prepPh: 'Things to bring (optional)', off: 'Cancelled', makeup: 'Make-up',
+    noAgenda: 'Nothing scheduled', prep: '🎒 Bring', prepPh: 'Things to bring (optional)', off: 'Cancelled', makeup: 'Make-up',
     classes: '🏫 Classes', className: 'Class name (e.g. 🎹 Piano)', classMemo: 'Memo (e.g. Room 302)', classPrep: 'Things to bring (e.g. music book)',
     period: 'Active period (optional)', saveClass: 'Save', addClass: '＋ New class', pickDays: 'Pick at least one day', confirmClass: 'Delete this class?',
     wdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], markOff: 'Mark cancelled', unmarkOff: 'Undo cancel', addMakeup: 'Add make-up', classAlarm: '{name} in 15 minutes!',
@@ -577,22 +578,11 @@ function fitBox(box, list, items, button) {
   }
 }
 const fitList = (ul) => fitBox(ul.closest('.card'), ul, [...ul.children].filter((li) => li.tagName === 'LI'), (txt) => `<button class="ghost" data-more="${ul.id}">${txt}</button>`);
-// 아이 카드: 할 일 목록은 남는 높이만큼 보이고 길면 손가락으로 스크롤. 오늘 일정은 2개까지 보이고,
-// 할 일이 2줄도 안 보일 만큼 좁으면 일정을 더 줄임. 숨긴 일정은 "+N개 더" → 달력
+// 아이 카드: 할 일이 먼저. 할 일이 다 안 보이면 일정 두 번째 줄(내일)은 숨김. 첫 줄은 항상 보임
 function fitCard(card) {
-  const ags = [...card.querySelectorAll('.agenda')], todo = card.querySelector('.todo');
-  if (ags.length) {
-    ags.forEach((ag) => { ag.querySelector(':scope > .more')?.remove(); ag.querySelectorAll('.ag').forEach((x, i) => x.hidden = i >= 2); });
-    const items = ags.flatMap((ag) => [...ag.querySelectorAll('.ag')]); // 공간이 모자라면 내일 것부터 숨김
-    const tight = () => todo && todo.clientHeight < Math.min(todo.scrollHeight, 150) || card.scrollHeight > card.clientHeight + 1;
-    const mores = () => { for (const ag of ags) { // "+N개 더" 버튼까지 넣고 다시 재서, 그래도 넘치면 하나 더 숨김
-      ag.querySelector(':scope > .more')?.remove();
-      const hid = ag.querySelectorAll('.ag[hidden]').length;
-      if (hid) { const more = document.createElement('div'); more.className = 'more'; more.innerHTML = `<button class="ghost" data-calopen>${t('more').replace('{n}', hid)}</button>`; ag.append(more); }
-    } };
-    for (let n = items.length - 1; n >= 0; n--) { mores(); if (!items[n].hidden && !tight()) break; items[n].hidden = true; }
-    mores();
-  }
+  const todo = card.querySelector('.todo'), rows = [...card.querySelectorAll('.agenda .ag')];
+  rows.forEach((r) => r.hidden = false);
+  if (rows[1] && todo && (todo.scrollHeight > todo.clientHeight + 1 || card.scrollHeight > card.clientHeight + 1)) rows[1].hidden = true;
   if (todo) scrollHint(todo);
 }
 const scrollHint = (el) => el.classList.toggle('more-below', el.scrollTop + el.clientHeight < el.scrollHeight - 2);
@@ -636,10 +626,13 @@ function dayItems(d) {
   return out.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 }
 const tags = (it) => (it.off ? `<span class="tag">${t('off')}</span>` : '') + (it.kind === 'makeup' ? `<span class="tag mk">${t('makeup')}</span>` : '');
-function agendaHtml(k) { // 오늘 + 내일
-  return [[today(), 'agToday'], [addDays(1), 'agTomorrow']].map(([d, h]) => `<div class="agenda"><h3>${t(h)}</h3>${dayItems(d).filter((it) => it.kid === k.id).map((it) => `<div class="ag ${it.off ? 'off' : ''}">
-    <span class="tm">${it.time}</span>${esc(it.title)}${tags(it)}${it.memo ? ` <span class="memo">· ${esc(it.memo)}</span>` : ''}
-${it.prep && !it.off ? ` <span class="prep">· 🎒 ${esc(it.prep)}</span>` : ''}</div>`).join('') || `<p class="empty">${t('noAgenda')}</p>`}</div>`).join('');
+function agendaHtml(k) { // 오늘·내일 한 줄씩 (일정 없는 날은 줄 없음, 자세한 건 달력)
+  const rows = [[today(), 'today'], [addDays(1), 'tomorrow']].map(([d, h]) => {
+    const its = dayItems(d).filter((it) => it.kid === k.id);
+    const prep = its.filter((it) => it.prep && !it.off).map((it) => esc(it.prep)).join(', '); // 준비물은 일정들 뒤에 모아서
+    return its.length ? `<div class="ag"><b class="tm">${t(h)}</b>${its.map((it) => `<span class="${it.off ? 'off' : ''}">${it.time} ${esc(it.title)}${tags(it)}</span>`).join(' · ')}${prep ? ` <span class="prep">🎒 ${prep}</span>` : ''}</div>` : '';
+  }).join('');
+  return rows && `<div class="agenda">${rows}</div>`;
 }
 
 // ---------- 날씨: Open-Meteo, 막히면 MET Norway (둘 다 키 없음). 미세먼지는 Open-Meteo 대기질 ----------
